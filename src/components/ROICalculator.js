@@ -540,17 +540,7 @@ function ROICalculator() {
       // Revenue Visualization Section - directly after the patient table, no separate page
       const chartSectionY = packageY + 10;
       
-      // Add section header
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(14);
-      pdf.setTextColor(37, 58, 111);
-      pdf.text("2. Umsatzvisualisierung", 20, chartSectionY);
-      
-      // Description text
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(10);
-      pdf.setTextColor(80, 80, 80);
-      pdf.text("Grafische Darstellung der Umsatzverteilung nach Patientengruppen", 20, chartSectionY + 8);
+      // No section header for cleaner look
       
       // Add donut chart with improved styling and better legend
       if (chartRef.current) {
@@ -674,11 +664,10 @@ function ROICalculator() {
         // Continue ROI analysis on the same page
         roiY = chartSectionY + 200; // Position after the chart section
         
-        // ROI section title
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(14);
-        pdf.setTextColor(37, 58, 111);
-        pdf.text("3. Return on Investment Analyse", 20, roiY);
+        // Simple separator line instead of a header
+        pdf.setDrawColor(240, 180, 34, 0.5);
+        pdf.setLineWidth(0.5);
+        pdf.line(20, roiY - 5, 190, roiY - 5);
         
         // Combined table to save space - showing ROI and metrics in one table
         autoTable(pdf, {
