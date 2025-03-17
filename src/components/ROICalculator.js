@@ -264,7 +264,7 @@ function ROICalculator() {
     }, 300);
   };
 
-  // Chart data for revenue breakdown
+  // Chart data for revenue breakdown with improved colors for better contrast
   const revenueChartData = {
     labels: ["Gesetzlich", "Privat", "Selbstzahler"],
     datasets: [
@@ -272,35 +272,39 @@ function ROICalculator() {
         label: "Umsatz (€)",
         data: [statutoryRevenue, privateRevenue, selfPayRevenue],
         backgroundColor: [
-          "rgba(37, 58, 111, 0.7)",  // Secondary color (dark blue)
-          "rgba(37, 58, 111, 0.4)",  // Lighter secondary
-          "rgba(240, 180, 34, 0.7)"  // Primary color (gold)
+          "rgba(37, 58, 111, 0.85)",  // Dark blue for statutory
+          "rgba(82, 130, 255, 0.85)",  // Light blue for private
+          "rgba(240, 180, 34, 0.85)"   // Gold for self-pay
         ],
         borderColor: [
-          "rgba(37, 58, 111, 1)",    // Secondary color
-          "rgba(37, 58, 111, 0.8)",  // Lighter secondary
-          "rgba(240, 180, 34, 1)"    // Primary color
+          "rgba(37, 58, 111, 1)",      // Dark blue border
+          "rgba(82, 130, 255, 1)",     // Light blue border
+          "rgba(240, 180, 34, 1)"      // Gold border
         ],
         borderWidth: 1,
       },
     ],
   };
 
-  // Chart options
+  // Chart options with better display settings
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    cutout: '40%', // Less cutout for better visibility (more donut, less pie)
     plugins: {
       legend: {
         position: "top",
         labels: {
           font: {
-            size: 12,
+            size: 13,
+            weight: 'bold',
             family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
           },
           padding: 15,
           usePointStyle: true,
-          pointStyle: 'circle'
+          pointStyle: 'circle',
+          boxWidth: 10,
+          color: '#333333' // Darker text for better contrast
         }
       },
       title: {
@@ -324,6 +328,9 @@ function ROICalculator() {
               label += ': ';
             }
             label += formatCurrency(context.raw);
+            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+            const percentage = Math.round((context.raw / total) * 100);
+            label += ` (${percentage}%)`;
             return label;
           }
         }
@@ -530,21 +537,39 @@ function ROICalculator() {
         packageY = patientSectionY + 70; // Fallback
       }
       
-      // Selbstzahler package information in a nice box - use white background instead of tinted
-      pdf.setFillColor(255, 255, 255); // White background
-      pdf.setDrawColor(240, 180, 34, 0.5); // Gold border
+      // Selbstzahler package information with improved formatting
+      pdf.setFillColor(246, 246, 250); // Light background
+      pdf.setDrawColor(240, 180, 34, 0.7); // Gold border
       pdf.setLineWidth(0.5);
-      pdf.roundedRect(20, packageY, 170, 20, 2, 2, 'FD'); // Fill and Draw
+      pdf.roundedRect(20, packageY, 170, 30, 2, 2, 'FD'); // Fill and Draw
+      
+      // Package title bar
+      pdf.setFillColor(37, 58, 111, 0.1); // Very light blue header
+      pdf.rect(20, packageY, 170, 10, 'F');
       
       pdf.setFontSize(11);
       pdf.setFont("helvetica", "bold");
       pdf.setTextColor(37, 58, 111); // Blue color for heading
-      pdf.text("Gewähltes Selbstzahlerpaket:", 25, packageY + 7);
+      pdf.text("Selbstzahlerpaket - Details", 105, packageY + 7, { align: "center" });
       
-      pdf.setFont("helvetica", "normal");
-      pdf.setTextColor(60, 60, 60); // Dark gray for content
+      // Package information in a clearer layout
       const selectedPkg = SELF_PAY_PACKAGES[selectedPackage];
-      pdf.text(`${selectedPkg.name} - ${formatCurrency(selectedPkg.price)} (${selectedPkg.sessions} Sitzungen à ${formatCurrency(selectedPkg.price / selectedPkg.sessions)})`, 25, packageY + 15);
+      
+      // Package name - larger and prominent
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(12);
+      pdf.setTextColor(240, 180, 34);
+      pdf.text(selectedPkg.name, 30, packageY + 20);
+      
+      // Package details - right aligned
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.setTextColor(60, 60, 60);
+      
+      // Format details nicely
+      pdf.text(`Gesamtpreis: ${formatCurrency(selectedPkg.price)}`, 170, packageY + 17, { align: "right" });
+      pdf.text(`${selectedPkg.sessions} Sitzungen × ${formatCurrency(selectedPkg.price / selectedPkg.sessions)} pro Sitzung`, 
+             170, packageY + 25, { align: "right" });
       
       // Always start visualization on a new page for better layout
       pdf.addPage();
@@ -566,7 +591,7 @@ function ROICalculator() {
       pdf.setTextColor(80, 80, 80);
       pdf.text("Grafische Darstellung der Umsatzverteilung nach Patientengruppen", 20, chartSectionY + 8);
       
-      // Add donut chart with improved styling
+      // Add donut chart with improved styling and better legend
       if (chartRef.current) {
         try {
           // Get chart and make canvas for it
@@ -574,55 +599,92 @@ function ROICalculator() {
           const chartImgData = chartCanvas.toDataURL('image/png', 1.0);
           
           // Add chart background
-          pdf.setFillColor(248, 248, 252);
-          pdf.roundedRect(20, chartSectionY + 12, 170, 90, 3, 3, 'F');
+          pdf.setFillColor(250, 250, 252);
+          pdf.roundedRect(20, chartSectionY + 12, 170, 110, 3, 3, 'F');
           
           // Add the chart image to the PDF with improved position and sizing
-          pdf.addImage(chartImgData, 'PNG', 30, chartSectionY + 22, 75, 75);
+          pdf.addImage(chartImgData, 'PNG', 40, chartSectionY + 22, 80, 80);
           
-          // Add legend with percentages
+          // Add legend with percentages with clearer design
           const total = statutoryRevenue + privateRevenue + selfPayRevenue;
           const statPct = Math.round((statutoryRevenue / total) * 100);
           const privatePct = Math.round((privateRevenue / total) * 100);
           const selfPayPct = Math.round((selfPayRevenue / total) * 100);
           
-          // Legend titles
+          // Create a clearer legend box with title
+          pdf.setFillColor(255, 255, 255);
+          pdf.roundedRect(30, chartSectionY + 105, 150, 15, 2, 2, 'F');
+          
+          // Legend title centered above the legend box
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(9);
+          pdf.setTextColor(37, 58, 111);
+          pdf.text("Legende:", 90, chartSectionY + 103, { align: "center" });
+          
+          // Draw legend items side by side with clear colors matching the chart
+          const legendY = chartSectionY + 113;
+          
+          // Item 1: Gesetzlich
+          pdf.setFillColor(37, 58, 111, 0.85); // Darker blue
+          pdf.rect(35, legendY - 3, 6, 6, 'F');
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(37, 58, 111);
+          pdf.text(`Gesetzlich: ${statPct}%`, 44, legendY);
+          
+          // Item 2: Privat
+          pdf.setFillColor(82, 130, 255, 0.85); // Light blue
+          pdf.rect(85, legendY - 3, 6, 6, 'F');
+          pdf.setTextColor(40, 40, 40);
+          pdf.text(`Privat: ${privatePct}%`, 94, legendY);
+          
+          // Item 3: Selbstzahler
+          pdf.setFillColor(240, 180, 34, 0.85); // Gold
+          pdf.rect(130, legendY - 3, 6, 6, 'F');
+          pdf.setTextColor(40, 40, 40);
+          pdf.text(`Selbstzahler: ${selfPayPct}%`, 139, legendY);
+          
+          // Add more detailed breakdown table below the chart
+          const detailsY = chartSectionY + 130;
+          
+          // Create a neat table for financial details
+          pdf.setFillColor(255, 255, 255);
+          pdf.roundedRect(30, detailsY, 150, 45, 2, 2, 'F');
+          
+          // Table header
           pdf.setFont("helvetica", "bold");
           pdf.setFontSize(10);
           pdf.setTextColor(37, 58, 111);
-          pdf.text("Umsatzverteilung:", 115, chartSectionY + 32);
+          pdf.text("Detaillierte Umsatzverteilung", 105, detailsY + 10, { align: "center" });
           
-          // Legend items with color boxes
-          pdf.setFontSize(9);
-          pdf.setFillColor(37, 58, 111, 0.7);
-          pdf.rect(115, chartSectionY + 40, 5, 5, 'F');
+          // Draw lines
+          pdf.setDrawColor(240, 180, 34, 0.5);
+          pdf.setLineWidth(0.2);
+          pdf.line(40, detailsY + 13, 170, detailsY + 13);
+          
+          // Table rows with financial details - column headers
+          pdf.setFontSize(8);
+          pdf.text("Patientengruppe", 40, detailsY + 20);
+          pdf.text("Anzahl", 95, detailsY + 20, { align: "center" });
+          pdf.text("Umsatz", 140, detailsY + 20, { align: "right" });
+          
+          // Table data
           pdf.setFont("helvetica", "normal");
           pdf.setTextColor(60, 60, 60);
-          pdf.text(`Gesetzlich: ${statPct}% (${formatCurrency(statutoryRevenue)})`, 125, chartSectionY + 43);
           
-          pdf.setFillColor(37, 58, 111, 0.4);
-          pdf.rect(115, chartSectionY + 50, 5, 5, 'F');
-          pdf.text(`Privat: ${privatePct}% (${formatCurrency(privateRevenue)})`, 125, chartSectionY + 53);
+          // Row 1
+          pdf.text("Gesetzlich versicherte", 40, detailsY + 28);
+          pdf.text(statutoryPatients.toString(), 95, detailsY + 28, { align: "center" });
+          pdf.text(formatCurrency(statutoryRevenue), 140, detailsY + 28, { align: "right" });
           
-          pdf.setFillColor(240, 180, 34, 0.7);
-          pdf.rect(115, chartSectionY + 60, 5, 5, 'F');
-          pdf.text(`Selbstzahler: ${selfPayPct}% (${formatCurrency(selfPayRevenue)})`, 125, chartSectionY + 63);
+          // Row 2
+          pdf.text("Privatpatienten", 40, detailsY + 36);
+          pdf.text(privatePatients.toString(), 95, detailsY + 36, { align: "center" });
+          pdf.text(formatCurrency(privateRevenue), 140, detailsY + 36, { align: "right" });
           
-          // Add a brief analysis (using simpler styling)
-          pdf.setFont("helvetica", "italic");
-          pdf.setFontSize(8);
-          
-          let analysisText = "Empfehlung: ";
-          if (selfPayPct < 20) {
-            analysisText += "Erhöhen Sie den Anteil an Selbstzahlern für bessere Rentabilität.";
-          } else if (privatePct < 15) {
-            analysisText += "Ein höherer Anteil an Privatpatienten könnte Ihren ROI verbessern.";
-          } else {
-            analysisText += "Ihre aktuelle Patientenverteilung ist optimal für die Rentabilität.";
-          }
-          
-          const splitAnalysis = pdf.splitTextToSize(analysisText, 80);
-          pdf.text(splitAnalysis, 115, chartSectionY + 73);
+          // Row 3
+          pdf.text("Selbstzahler", 40, detailsY + 44);
+          pdf.text(selfPayPatients.toString(), 95, detailsY + 44, { align: "center" });
+          pdf.text(formatCurrency(selfPayRevenue), 140, detailsY + 44, { align: "right" });
         } catch (e) {
           // If chart capture fails, add a text note
           pdf.setFont("helvetica", "italic");
