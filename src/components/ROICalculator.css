@@ -218,8 +218,8 @@
 /* Radio Group */
 .radio-group {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
   margin-top: 8px;
   width: 100%;
 }
@@ -227,8 +227,8 @@
 .radio-item {
   display: flex;
   align-items: center;
-  padding: 14px 18px;
-  border-radius: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
   transition: all 0.2s ease;
   border: 1px solid #e0e0e0;
   background-color: white;
@@ -254,16 +254,17 @@
 .radio-item input[type="radio"] {
   appearance: none;
   -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border: 2px solid #aab2bd;
   border-radius: 50%;
-  margin-right: 14px;
+  margin-right: 12px;
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.2s ease;
   background-color: white;
+  display: block;
 }
 
 .radio-item input[type="radio"]:hover {
@@ -281,8 +282,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   background-color: var(--primary-color);
   border-radius: 50%;
   box-shadow: 0 0 3px rgba(240, 180, 34, 0.4);
@@ -301,19 +302,20 @@
 .package-name {
   font-weight: 600;
   color: var(--secondary-color);
+  font-size: 0.9rem;
 }
 
 .package-price {
   font-weight: 500;
   color: var(--primary-color);
-  margin-top: 3px;
-  font-size: 1rem;
+  margin-top: 2px;
+  font-size: 0.95rem;
 }
 
 .price-per-session {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-light);
-  margin-top: 4px;
+  margin-top: 2px;
   font-weight: 400;
 }
 
