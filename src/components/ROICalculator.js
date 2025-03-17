@@ -537,122 +537,15 @@ function ROICalculator() {
         packageY = patientSectionY + 70; // Fallback
       }
       
-      // Revenue Visualization Section - directly after the patient table, no separate page
-      const chartSectionY = packageY + 10;
-      
-      // No section header for cleaner look
-      
-      // Add donut chart with improved styling and better legend
-      if (chartRef.current) {
-        try {
-          // Get chart and make canvas for it
-          const chartCanvas = await html2canvas(chartRef.current.canvas);
-          const chartImgData = chartCanvas.toDataURL('image/png', 1.0);
-          
-          // Add chart background
-          pdf.setFillColor(250, 250, 252);
-          pdf.roundedRect(20, chartSectionY + 12, 170, 110, 3, 3, 'F');
-          
-          // Add the chart image to the PDF with improved position and sizing
-          pdf.addImage(chartImgData, 'PNG', 40, chartSectionY + 22, 80, 80);
-          
-          // Add legend with percentages with clearer design
-          const total = statutoryRevenue + privateRevenue + selfPayRevenue;
-          const statPct = Math.round((statutoryRevenue / total) * 100);
-          const privatePct = Math.round((privateRevenue / total) * 100);
-          const selfPayPct = Math.round((selfPayRevenue / total) * 100);
-          
-          // Create a clearer legend box with title
-          pdf.setFillColor(255, 255, 255);
-          pdf.roundedRect(30, chartSectionY + 105, 150, 15, 2, 2, 'F');
-          
-          // Legend title centered above the legend box
-          pdf.setFont("helvetica", "bold");
-          pdf.setFontSize(9);
-          pdf.setTextColor(37, 58, 111);
-          pdf.text("Legende:", 90, chartSectionY + 103, { align: "center" });
-          
-          // Draw legend items side by side with clear colors matching the chart
-          const legendY = chartSectionY + 113;
-          
-          // Item 1: Gesetzlich
-          pdf.setFillColor(37, 58, 111, 0.85); // Darker blue
-          pdf.rect(35, legendY - 3, 6, 6, 'F');
-          pdf.setFont("helvetica", "normal");
-          pdf.setTextColor(37, 58, 111);
-          pdf.text(`Gesetzlich: ${statPct}%`, 44, legendY);
-          
-          // Item 2: Privat
-          pdf.setFillColor(82, 130, 255, 0.85); // Light blue
-          pdf.rect(85, legendY - 3, 6, 6, 'F');
-          pdf.setTextColor(40, 40, 40);
-          pdf.text(`Privat: ${privatePct}%`, 94, legendY);
-          
-          // Item 3: Selbstzahler
-          pdf.setFillColor(240, 180, 34, 0.85); // Gold
-          pdf.rect(130, legendY - 3, 6, 6, 'F');
-          pdf.setTextColor(40, 40, 40);
-          pdf.text(`Selbstzahler: ${selfPayPct}%`, 139, legendY);
-          
-          // Add more detailed breakdown table below the chart
-          const detailsY = chartSectionY + 130;
-          
-          // Create a neat table for financial details
-          pdf.setFillColor(255, 255, 255);
-          pdf.roundedRect(30, detailsY, 150, 45, 2, 2, 'F');
-          
-          // Table header
-          pdf.setFont("helvetica", "bold");
-          pdf.setFontSize(10);
-          pdf.setTextColor(37, 58, 111);
-          pdf.text("Detaillierte Umsatzverteilung", 105, detailsY + 10, { align: "center" });
-          
-          // Draw lines
-          pdf.setDrawColor(240, 180, 34, 0.5);
-          pdf.setLineWidth(0.2);
-          pdf.line(40, detailsY + 13, 170, detailsY + 13);
-          
-          // Table rows with financial details - column headers
-          pdf.setFontSize(8);
-          pdf.text("Patientengruppe", 40, detailsY + 20);
-          pdf.text("Anzahl", 95, detailsY + 20, { align: "center" });
-          pdf.text("Umsatz", 140, detailsY + 20, { align: "right" });
-          
-          // Table data
-          pdf.setFont("helvetica", "normal");
-          pdf.setTextColor(60, 60, 60);
-          
-          // Row 1
-          pdf.text("Gesetzlich versicherte", 40, detailsY + 28);
-          pdf.text(statutoryPatients.toString(), 95, detailsY + 28, { align: "center" });
-          pdf.text(formatCurrency(statutoryRevenue), 140, detailsY + 28, { align: "right" });
-          
-          // Row 2
-          pdf.text("Privatpatienten", 40, detailsY + 36);
-          pdf.text(privatePatients.toString(), 95, detailsY + 36, { align: "center" });
-          pdf.text(formatCurrency(privateRevenue), 140, detailsY + 36, { align: "right" });
-          
-          // Row 3
-          pdf.text("Selbstzahler", 40, detailsY + 44);
-          pdf.text(selfPayPatients.toString(), 95, detailsY + 44, { align: "center" });
-          pdf.text(formatCurrency(selfPayRevenue), 140, detailsY + 44, { align: "right" });
-        } catch (e) {
-          // If chart capture fails, add a text note
-          pdf.setFont("helvetica", "italic");
-          pdf.setFontSize(10);
-          pdf.text("Umsatzvisualisierung konnte nicht generiert werden.", 20, chartSectionY + 30);
-          console.error("Chart generation error:", e);
-        }
-      }
+      // Skip visualization section completely
+      const chartSectionY = packageY;
       
       // ROI Analysis Section (only if advanced options were shown)
       if (showAdvancedOptions) {
-        // Calculate position for ROI section
-        let roiY = chartSectionY + 110;
+        // Position ROI section directly after the patient table
+        let roiY = packageY + 20;
         try {
-          if (chartRef.current) {
-            // We already positioned relative to chart
-          } else if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
+          if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
             roiY = pdf.lastAutoTable.finalY + 15;
           } else if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
             roiY = pdf.previousAutoTable.finalY + 15;
@@ -660,9 +553,6 @@ function ROICalculator() {
         } catch (e) {
           // Keep default
         }
-        
-        // Continue ROI analysis on the same page
-        roiY = chartSectionY + 200; // Position after the chart section
         
         // Simple separator line instead of a header
         pdf.setDrawColor(240, 180, 34, 0.5);
