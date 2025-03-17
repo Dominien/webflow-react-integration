@@ -508,6 +508,18 @@
   gap: 8px;
 }
 
+/* Make results indicator full width on mobile */
+@media (max-width: 767px) {
+  .results-indicator {
+    display: flex;
+    width: 100%;
+    margin-left: 0;
+    transform: none;
+    border-radius: 0;
+    padding: 12px;
+  }
+}
+
 .indicator-icon {
   color: var(--primary-color);
   margin-right: 8px;
