@@ -60,15 +60,19 @@ const EuroIcon = () => (
 
 const SettingsIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="3"></circle>
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"></path>
+    <path d="M3 9V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4"></path>
+    <path d="M12 14v2"></path>
+    <path d="M8 9V5"></path>
+    <path d="M16 9V5"></path>
   </svg>
 );
 
 const ChartIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
-    <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+    <path d="M12 20V10"></path>
+    <path d="M18 20V4"></path>
+    <path d="M6 20v-4"></path>
   </svg>
 );
 
@@ -81,11 +85,11 @@ const ClockIcon = () => (
 
 const EuroCircleIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"></circle>
-    <path d="M8 12h4"></path>
-    <path d="M8 8h3"></path>
-    <path d="M16 16.5a5 5 0 0 1-8-2.5"></path>
-    <path d="M16 7.5a5 5 0 0 0-8 2.5"></path>
+    <path d="M2.5 9.5V8a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-15a2 2 0 0 1-2-2v-1.5"></path>
+    <path d="M7 7v10"></path>
+    <path d="M20 7v10"></path>
+    <path d="M8 15c4 0 6-2 6-5"></path>
+    <path d="M8 9c4 0 6 2 6 5"></path>
   </svg>
 );
 
@@ -155,8 +159,12 @@ const NumberInput = ({ value, onChange, min = 0, label, hint, id }) => {
 
 // Custom switch component
 const ToggleSwitch = ({ isChecked, onChange, label, icon }) => {
+  const handleToggleClick = () => {
+    onChange(!isChecked);
+  };
+  
   return (
-    <div className="toggle-section">
+    <div className="toggle-section" onClick={handleToggleClick}>
       <label className="toggle-label" htmlFor="advanced-toggle">
         <span className="toggle-icon">{icon}</span>
         {label}
@@ -437,9 +445,10 @@ function ROICalculator() {
                         onChange={() => setSelectedPackage(key)}
                       />
                       <label htmlFor={key}>
-                        {pkg.name} - {formatCurrency(pkg.price)}
+                        <span className="package-name">{pkg.name}</span>
+                        <span className="package-price">{formatCurrency(pkg.price)}</span>
                         <span className="price-per-session">
-                          ({formatCurrency(pkg.price / pkg.sessions)} pro Sitzung)
+                          {formatCurrency(pkg.price / pkg.sessions)} pro Sitzung
                         </span>
                       </label>
                     </div>
@@ -455,7 +464,7 @@ function ROICalculator() {
               isChecked={showAdvancedOptions}
               onChange={setShowAdvancedOptions}
               label="Erweiterte Optionen anzeigen"
-              icon="⚙️"
+              icon={<SettingsIcon />}
             />
 
             {showAdvancedOptions && (
