@@ -75,13 +75,24 @@ function ROICalculator() {
     // Show results
     setShowResults(true);
 
-    // Scroll to results
+    // Improved scrolling - wait for state update to complete and DOM to render
     setTimeout(() => {
       const resultsSection = document.getElementById("results-section");
       if (resultsSection) {
-        resultsSection.scrollIntoView({ behavior: "smooth" });
+        // Get the position of the element relative to the viewport
+        const rect = resultsSection.getBoundingClientRect();
+        
+        // Calculate where to scroll (element's position + current scroll - some offset for better UX)
+        const offset = 20; // Offset from the top of the viewport
+        const scrollPosition = rect.top + window.pageYOffset - offset;
+        
+        // Scroll to position
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: 'smooth'
+        });
       }
-    }, 100);
+    }, 300); // Increased timeout to ensure DOM is updated
   };
 
   // Chart data for revenue breakdown
