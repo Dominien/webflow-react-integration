@@ -161,6 +161,18 @@
   height: 40px; /* Reduced to match the new padding */
 }
 
+/* Hide default browser increment/decrement controls */
+.input-group input[type="number"]::-webkit-inner-spin-button,
+.input-group input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.input-group input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 .input-group input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px var(--primary-light);
