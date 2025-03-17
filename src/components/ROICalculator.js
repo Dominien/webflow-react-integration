@@ -102,8 +102,16 @@ function ROICalculator() {
       {
         label: "Umsatz (€)",
         data: [statutoryRevenue, privateRevenue, selfPayRevenue],
-        backgroundColor: ["rgba(53, 162, 235, 0.5)", "rgba(75, 192, 192, 0.5)", "rgba(255, 99, 132, 0.5)"],
-        borderColor: ["rgba(53, 162, 235, 1)", "rgba(75, 192, 192, 1)", "rgba(255, 99, 132, 1)"],
+        backgroundColor: [
+          "rgba(37, 58, 111, 0.7)",  // Secondary color (dark blue)
+          "rgba(37, 58, 111, 0.4)",  // Lighter secondary
+          "rgba(240, 180, 34, 0.7)"  // Primary color (gold)
+        ],
+        borderColor: [
+          "rgba(37, 58, 111, 1)",    // Secondary color
+          "rgba(37, 58, 111, 0.8)",  // Lighter secondary
+          "rgba(240, 180, 34, 1)"    // Primary color
+        ],
         borderWidth: 1,
       },
     ],
@@ -112,15 +120,51 @@ function ROICalculator() {
   // Chart options
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: "top",
+        labels: {
+          font: {
+            size: 12,
+            family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+          },
+          padding: 15,
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
       },
       title: {
         display: true,
         text: "Umsatzverteilung",
+        font: {
+          size: 16,
+          weight: 600,
+          family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        },
+        color: '#253a6f',
+        padding: {
+          bottom: 15
+        }
       },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            let label = context.label || '';
+            if (label) {
+              label += ': ';
+            }
+            label += formatCurrency(context.raw);
+            return label;
+          }
+        }
+      }
     },
+    animation: {
+      animateScale: true,
+      animateRotate: true,
+      duration: 1000
+    }
   };
 
   // Format currency
