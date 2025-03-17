@@ -537,47 +537,8 @@ function ROICalculator() {
         packageY = patientSectionY + 70; // Fallback
       }
       
-      // Selbstzahler package information with improved formatting
-      pdf.setFillColor(246, 246, 250); // Light background
-      pdf.setDrawColor(240, 180, 34, 0.7); // Gold border
-      pdf.setLineWidth(0.5);
-      pdf.roundedRect(20, packageY, 170, 30, 2, 2, 'FD'); // Fill and Draw
-      
-      // Package title bar
-      pdf.setFillColor(37, 58, 111, 0.1); // Very light blue header
-      pdf.rect(20, packageY, 170, 10, 'F');
-      
-      pdf.setFontSize(11);
-      pdf.setFont("helvetica", "bold");
-      pdf.setTextColor(37, 58, 111); // Blue color for heading
-      pdf.text("Selbstzahlerpaket - Details", 105, packageY + 7, { align: "center" });
-      
-      // Package information in a clearer layout
-      const selectedPkg = SELF_PAY_PACKAGES[selectedPackage];
-      
-      // Package name - larger and prominent
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(12);
-      pdf.setTextColor(240, 180, 34);
-      pdf.text(selectedPkg.name, 30, packageY + 20);
-      
-      // Package details - right aligned
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(10);
-      pdf.setTextColor(60, 60, 60);
-      
-      // Format details nicely
-      pdf.text(`Gesamtpreis: ${formatCurrency(selectedPkg.price)}`, 170, packageY + 17, { align: "right" });
-      pdf.text(`${selectedPkg.sessions} Sitzungen × ${formatCurrency(selectedPkg.price / selectedPkg.sessions)} pro Sitzung`, 
-             170, packageY + 25, { align: "right" });
-      
-      // Always start visualization on a new page for better layout
-      pdf.addPage();
-      // Reset the position to top of new page
-      packageY = 40;
-      
-      // Revenue Visualization Section
-      const chartSectionY = packageY + 30;
+      // Revenue Visualization Section - directly after the patient table, no separate page
+      const chartSectionY = packageY + 10;
       
       // Add section header
       pdf.setFont("helvetica", "bold");
@@ -710,9 +671,8 @@ function ROICalculator() {
           // Keep default
         }
         
-        // Always start ROI analysis on a new page for better layout
-        pdf.addPage();
-        roiY = 40; // Start at top of new page
+        // Continue ROI analysis on the same page
+        roiY = chartSectionY + 200; // Position after the chart section
         
         // ROI section title
         pdf.setFont("helvetica", "bold");
