@@ -542,26 +542,32 @@ function ROICalculator() {
       
       // ROI Analysis Section (only if advanced options were shown)
       if (showAdvancedOptions) {
-        // Position ROI section directly after the patient table
-        let roiY = packageY + 20;
-        try {
-          if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
-            roiY = pdf.lastAutoTable.finalY + 15;
-          } else if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
-            roiY = pdf.previousAutoTable.finalY + 15;
-          }
-        } catch (e) {
-          // Keep default
-        }
+        // Always add a new page for ROI analysis to ensure everything fits
+        pdf.addPage();
         
-        // Simple separator line instead of a header
-        pdf.setDrawColor(240, 180, 34, 0.5);
+        // Start at the top of the new page (with space for mini-header)
+        let roiY = 30;
+        
+        // ROI Analysis title
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(14);
+        pdf.setTextColor(37, 58, 111);
+        pdf.text("Return on Investment Analyse", 20, roiY);
+        
+        // Draw gold line under the title
+        pdf.setDrawColor(240, 180, 34);
         pdf.setLineWidth(0.5);
-        pdf.line(20, roiY - 5, 190, roiY - 5);
+        pdf.line(20, roiY + 2, 120, roiY + 2);
         
-        // Combined table to save space - showing ROI and metrics in one table
+        // Brief explanation
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.setTextColor(60, 60, 60);
+        pdf.text("Finanzielle Kennzahlen für Ihre reLounge Investition", 20, roiY + 12);
+        
+        // Combined table showing ROI and metrics in one table - with more space
         autoTable(pdf, {
-          startY: roiY + 10,
+          startY: roiY + 20,
           head: [['Finanzparameter', 'Wert']],
           body: [
             ['Systemkosten (einmalig)', formatCurrency(systemCost)],
@@ -574,8 +580,8 @@ function ROICalculator() {
           ],
           theme: 'grid',
           styles: { 
-            fontSize: 9, 
-            cellPadding: 4,
+            fontSize: 10, 
+            cellPadding: 5,
             lineColor: [200, 200, 200]
           },
           headStyles: { 
@@ -592,16 +598,16 @@ function ROICalculator() {
           }
         });
         
-        // ROI Analysis message - directly below table
-        let messageY = roiY + 80; // Default position
+        // ROI Analysis message - position below table with plenty of space
+        let messageY;
         try {
           if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
-            messageY = pdf.lastAutoTable.finalY + 8;
-          } else if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
-            messageY = pdf.previousAutoTable.finalY + 8;
+            messageY = pdf.lastAutoTable.finalY + 20;
+          } else {
+            messageY = roiY + 120; // Default fallback position
           }
         } catch (e) {
-          // Keep default
+          messageY = roiY + 120; // Error fallback
         }
         
         // Get breakeven info for assessment
@@ -609,17 +615,17 @@ function ROICalculator() {
         const boxBorderColor = breakEvenInfo.color === "green" ? [0, 140, 0] : 
                               breakEvenInfo.color === "orange" ? [240, 140, 0] : [180, 0, 0];
         
-        // Create a more compact assessment box
+        // Create an assessment box with more space
         pdf.setFillColor(248, 248, 252);
-        pdf.roundedRect(20, messageY, 170, 25, 2, 2, 'F');
+        pdf.roundedRect(20, messageY, 170, 35, 2, 2, 'F');
         
         // Add colored indicator
         pdf.setFillColor(...boxBorderColor);
-        pdf.circle(26, messageY + 10, 3, 'F');
+        pdf.circle(30, messageY + 15, 4, 'F');
         
         // Add heading with assessment status
         pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(10);
+        pdf.setFontSize(11);
         pdf.setTextColor(60, 60, 60);
         
         let assessmentTitle = "ROI Bewertung: ";
@@ -631,13 +637,14 @@ function ROICalculator() {
           assessmentTitle += "Verbesserungswürdig";
         }
         
-        pdf.text(assessmentTitle, 32, messageY + 10);
+        pdf.text(assessmentTitle, 40, messageY + 15);
         
-        // Add message with word wrapping
+        // Add message with word wrapping - with more space and larger font
         pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(8);
-        const splitMessage = pdf.splitTextToSize(breakEvenInfo.message, 165);
-        pdf.text(splitMessage, 32, messageY + 16);
+        pdf.setFontSize(9);
+        // Ensure text always wraps properly with plenty of space
+        const splitMessage = pdf.splitTextToSize(breakEvenInfo.message, 145);
+        pdf.text(splitMessage, 40, messageY + 25);
       }
       
       // Skip the future projections page to keep everything on one page
