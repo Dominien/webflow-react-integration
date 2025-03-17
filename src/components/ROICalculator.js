@@ -429,8 +429,19 @@ function ROICalculator() {
         footStyles: { fillColor: [240, 180, 34, 0.1], textColor: [0, 0, 0], fontStyle: 'bold' }
       });
       
-      // Package information
-      const packageY = pdf.previousAutoTable.finalY + 10;
+      // Get the Y position after the table
+      let packageY = 50;
+      try {
+        if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
+          packageY = pdf.lastAutoTable.finalY + 10;
+        } else if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
+          packageY = pdf.previousAutoTable.finalY + 10;
+        } else {
+          packageY = 120; // Default if no table info available
+        }
+      } catch (e) {
+        packageY = 120; // Fallback
+      }
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "bold");
       pdf.text("Gewähltes Selbstzahlerpaket:", 20, packageY);
@@ -457,7 +468,20 @@ function ROICalculator() {
       
       // ROI Analysis Section (only if advanced options were shown)
       if (showAdvancedOptions) {
-        const roiY = pdf.previousAutoTable ? (pdf.previousAutoTable.finalY + 100) : 170;
+        // Calculate a safe Y position for ROI section
+        let roiY = 170;
+        try {
+          if (chartRef.current) {
+            // If we have a chart, position below the chart
+            roiY = packageY + 100;
+          } else if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
+            roiY = pdf.lastAutoTable.finalY + 20;
+          } else if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
+            roiY = pdf.previousAutoTable.finalY + 20;
+          }
+        } catch (e) {
+          roiY = packageY + 100; // Fallback
+        }
         
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(14);
@@ -480,7 +504,16 @@ function ROICalculator() {
         });
         
         // ROI Analysis message
-        const messageY = pdf.previousAutoTable.finalY + 10;
+        let messageY = roiY + 70; // Default position
+        try {
+          if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
+            messageY = pdf.lastAutoTable.finalY + 10;
+          } else if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
+            messageY = pdf.previousAutoTable.finalY + 10;
+          }
+        } catch (e) {
+          // Keep default
+        }
         const breakEvenInfo = getBreakevenInfo(breakEvenMonths);
         
         pdf.setFontSize(12);
