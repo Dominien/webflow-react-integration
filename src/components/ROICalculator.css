@@ -1,33 +1,72 @@
 .roi-calculator {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  max-width: 600px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  color: #333;
 }
 
-.roi-calculator h2 {
-  text-align: center;
+/* Card Styles */
+.calculator-card, .results-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 20px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  margin: 0 0 5px 0;
   color: #2c3e50;
 }
 
-.calculator-inputs {
+.card-description {
+  color: #6c757d;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.card-content {
+  padding: 20px;
+}
+
+/* Input Sections */
+.input-section {
+  margin-bottom: 25px;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #37474f;
+}
+
+.input-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 15px;
-  margin-bottom: 25px;
+}
+
+@media (min-width: 768px) {
+  .input-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
+  margin-bottom: 15px;
 }
 
 .input-group label {
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   font-weight: 500;
   color: #546e7a;
 }
@@ -39,35 +78,299 @@
   font-size: 16px;
 }
 
-.results {
-  background-color: #eceff1;
-  padding: 15px;
-  border-radius: 6px;
+.input-hint {
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: #6c757d;
 }
 
-.result-item {
+/* Radio Group */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-item {
+  display: flex;
+  align-items: center;
+}
+
+.radio-item input[type="radio"] {
+  margin-right: 10px;
+}
+
+.price-per-session {
+  margin-left: 5px;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+/* Toggle Switch */
+.advanced-options {
+  border-top: 1px solid #eaeaea;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+.toggle-section {
   display: flex;
   justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #cfd8dc;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
-.result-item:last-child {
+.toggle-label {
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.toggle-switch label:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + label {
+  background-color: #0277bd;
+}
+
+.toggle-switch input:checked + label:before {
+  transform: translateX(26px);
+}
+
+.advanced-inputs {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #eaeaea;
+}
+
+/* Calculate Button */
+.button-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.calculate-button {
+  background-color: #0277bd;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.calculate-button:hover {
+  background-color: #015c94;
+}
+
+/* Results Section */
+.results-container {
+  margin-top: 40px;
+}
+
+.results-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 10px;
+  font-weight: 500;
+}
+
+.arrow-down {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #0277bd;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .results-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.revenue-summary, .roi-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.revenue-item, .roi-item {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.revenue-item:last-child, .roi-item:last-child {
   border-bottom: none;
 }
 
-.result-label {
-  font-weight: 500;
-  color: #37474f;
-}
-
-.result-value {
+.revenue-value, .total-value {
   font-weight: 600;
   color: #0277bd;
 }
 
-@media (min-width: 768px) {
-  .calculator-inputs {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.total-revenue {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #eaeaea;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.roi-summary {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eaeaea;
+}
+
+.roi-summary h3 {
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  color: #37474f;
+}
+
+/* Chart Container */
+.chart-container {
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-chart {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Breakeven Analysis */
+.breakeven-analysis {
+  padding: 15px;
+}
+
+.progress-section {
+  margin-bottom: 20px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.progress-label {
+  background-color: #0277bd;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.progress-value {
+  font-weight: 600;
+}
+
+.progress-bar-container {
+  height: 10px;
+  background-color: #eaeaea;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #0277bd;
+}
+
+.progress-timeline {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.breakeven-message {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+.breakeven-message p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Download Section */
+.download-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.download-button {
+  background-color: #0277bd;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  max-width: 300px;
+}
+
+.download-button:hover {
+  background-color: #015c94;
 }

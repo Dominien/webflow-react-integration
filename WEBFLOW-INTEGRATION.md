@@ -33,7 +33,7 @@ In your Webflow project:
 <script src="https://your-bucket-name.s3.your-region.amazonaws.com/bundle.js"></script>
 
 <!-- If using Vercel -->
-<script src="https://your-project-name.vercel.app/bundle.js"></script>
+<script src="https://webflow-react-integration-bipa.vercel.app/bundle.js"></script>
 ```
 
 Choose the appropriate script based on your deployment method.
