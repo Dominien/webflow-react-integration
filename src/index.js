@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import ROICalculator from './components/ROICalculator';
 
 // This function will be called when the script is loaded
@@ -7,11 +7,11 @@ function initROICalculator() {
   const targetElement = document.getElementById('roi-calculator-root');
   
   if (targetElement) {
-    ReactDOM.render(
+    const root = createRoot(targetElement);
+    root.render(
       <React.StrictMode>
         <ROICalculator />
-      </React.StrictMode>,
-      targetElement
+      </React.StrictMode>
     );
     console.log('ROI Calculator initialized successfully');
     return true;
