@@ -1,147 +1,9 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Container,
-  Flex,
-  Stack,
-  Text,
-  Heading,
-  FormControl,
-  FormLabel,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  Button,
-  VStack,
-  HStack,
-  Divider,
-  Badge,
-  Card,
-  CardHeader,
-  CardBody,
-  Grid,
-  GridItem,
-  useColorModeValue,
-  Switch,
-  RadioGroup,
-  Radio,
-  Progress,
-  useDisclosure,
-  createIcon,
-  Icon
-} from '@chakra-ui/react';
-import {
-  CheckCircleIcon,
-  InfoIcon,
-  ChevronDownIcon,
-  DownloadIcon
-} from '@chakra-ui/icons';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip as ChartTooltip, Legend } from 'chart.js';
+import './ROICalculator.css';
 
 ChartJS.register(ArcElement, ChartTooltip, Legend);
-
-// Create custom icons
-const CalculatorIcon = createIcon({
-  displayName: 'CalculatorIcon',
-  viewBox: '0 0 24 24',
-  path: (
-    <path 
-      fill="currentColor" 
-      d="M4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v4h16V4H4zm0 6v10h16V10H4zm2 2h5v2H6v-2zm7 0h3v2h-3v-2zm-7 4h5v2H6v-2zm7 0h3v4h-3v-4z"
-    />
-  ),
-});
-
-const UserCheckIcon = createIcon({
-  displayName: 'UserCheckIcon',
-  viewBox: '0 0 24 24',
-  path: (
-    <path 
-      fill="currentColor" 
-      d="M9 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM6.5 6a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0zM3.394 12.243A17.955 17.955 0 0 0 2 19.8V22h8.1c.12 0 .239-.004.356-.011A3.995 3.995 0 0 1 10 20h-6a16 16 0 0 1 9-9 3.989 3.989 0 0 1-.76-1.55 17.93 17.93 0 0 0-8.846 2.793zM16 14v2h6v2h-6v2h-2v-2h-6v-2h6v-2h2zM10 4h2v2h4v2h-4v2h-2V8H6V6h4V4z"
-    />
-  ),
-});
-
-const UsersIcon = createIcon({
-  displayName: 'UsersIcon',
-  viewBox: '0 0 24 24',
-  path: (
-    <path 
-      fill="currentColor" 
-      d="M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM18 15c-.5-2-3-3-6-3s-5.5 1-6 3v1h12v-1zm2 1H4v-1C4 11.34 7.33 9 12 9s8 2.34 8 6v1z"
-    />
-  ),
-});
-
-const EuroIcon = createIcon({
-  displayName: 'EuroIcon',
-  viewBox: '0 0 24 24',
-  path: (
-    <path 
-      fill="currentColor" 
-      d="M15 18.5a9.5 9.5 0 0 1-7.34-3.5H4v-2h3.1a9.8 9.8 0 0 1 0-3H4V8h3.66A9.5 9.5 0 0 1 15 4.5c1.95 0 3.78.5 5.37 1.5l-1.17 2.3A7.45 7.45 0 0 0 15 7a7.55 7.55 0 0 0-5.97 3H14v2H8.56a8.2 8.2 0 0 0-.06 1 8.8 8.8 0 0 0 .06 1H14v2H9.03c1.4 1.9 3.5 3 5.97 3 1.55 0 3-.39 4.2-1.08l1.17 2.3A10.15 10.15 0 0 1 15 18.5z"
-    />
-  ),
-});
-
-const PieChartIcon = createIcon({
-  displayName: 'PieChartIcon',
-  viewBox: '0 0 24 24',
-  path: (
-    <path 
-      fill="currentColor" 
-      d="M11 2v20c-5.05-.5-9-4.76-9-10 0-5.24 3.95-9.5 9-10zm2 0v9h9c-.5-5.05-4.76-9-10-9zm0 11v9c5.24 0 9.5-3.95 10-9h-10z"
-    />
-  ),
-});
-
-const ClockIcon = createIcon({
-  displayName: 'ClockIcon',
-  viewBox: '0 0 24 24',
-  path: (
-    <path 
-      fill="currentColor" 
-      d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-18a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 8H8v2h6V8h-2z"
-    />
-  ),
-});
-
-const DollarIcon = createIcon({
-  displayName: 'DollarIcon',
-  viewBox: '0 0 24 24',
-  path: (
-    <path 
-      fill="currentColor" 
-      d="M12 1v2c-4.97 0-9 4.03-9 9 0 4.97 4.03 9 9 9 4.97 0 9-4.03 9-9h-2c0 3.87-3.13 7-7 7s-7-3.13-7-7 3.13-7 7-7V1zm1 9V6.5c1.4.5 2.5 1.6 3 3H13zm-2 0H8c.5-1.4 1.6-2.5 3-3V10zm12-1h-2c0-2.76-2.24-5-5-5v2c1.66 0 3 1.34 3 3z"
-    />
-  ),
-});
-
-const FileDownIcon = createIcon({
-  displayName: 'FileDownIcon',
-  viewBox: '0 0 24 24',
-  path: (
-    <path 
-      fill="currentColor" 
-      d="M20 18H4V8H20V18ZM20 6H12L10 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V8C22 6.9 21.1 6 20 6ZM12 17L16 13H13V9H11V13H8L12 17Z"
-    />
-  ),
-});
-
-const SettingsIcon = createIcon({
-  displayName: 'SettingsIcon',
-  viewBox: '0 0 24 24',
-  path: (
-    <path 
-      fill="currentColor" 
-      d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
-    />
-  ),
-});
 
 // Fee constants
 const STATUTORY_FEE = 10.53;
@@ -157,6 +19,160 @@ const SELF_PAY_PACKAGES = {
 
 // Average reLounge system cost for ROI calculation
 const AVERAGE_SYSTEM_COST = 15000;
+
+// Icon components
+const CalculatorIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="2" width="16" height="20" rx="2" />
+    <line x1="4" y1="8" x2="20" y2="8" />
+    <line x1="8" y1="12" x2="8" y2="12" />
+    <line x1="12" y1="12" x2="12" y2="12" />
+    <line x1="16" y1="12" x2="16" y2="12" />
+    <line x1="8" y1="16" x2="8" y2="16" />
+    <line x1="12" y1="16" x2="12" y2="16" />
+    <line x1="16" y1="16" x2="16" y2="16" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+    <circle cx="9" cy="7" r="4"></circle>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+  </svg>
+);
+
+const UserIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+);
+
+const EuroIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 10h12"></path>
+    <path d="M4 14h9"></path>
+    <path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"></path>
+  </svg>
+);
+
+const SettingsIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+);
+
+const ChartIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+    <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </svg>
+);
+
+const EuroCircleIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M8 12h4"></path>
+    <path d="M8 8h3"></path>
+    <path d="M16 16.5a5 5 0 0 1-8-2.5"></path>
+    <path d="M16 7.5a5 5 0 0 0-8 2.5"></path>
+  </svg>
+);
+
+const DownloadIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+);
+
+const InfoIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="12" y1="16" x2="12" y2="12"></line>
+    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+  </svg>
+);
+
+const ChevronDownIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
+
+// Custom number input component
+const NumberInput = ({ value, onChange, min = 0, label, hint, id }) => {
+  const increment = () => {
+    onChange(value + 1);
+  };
+
+  const decrement = () => {
+    if (value > min) {
+      onChange(value - 1);
+    }
+  };
+
+  const handleChange = (e) => {
+    const newValue = parseInt(e.target.value, 10);
+    if (!isNaN(newValue) && newValue >= min) {
+      onChange(newValue);
+    } else if (e.target.value === '') {
+      onChange(min);
+    }
+  };
+
+  return (
+    <div className="input-group">
+      <label htmlFor={id}>{label}</label>
+      <div className="input-number">
+        <input
+          id={id}
+          type="number"
+          min={min}
+          value={value}
+          onChange={handleChange}
+        />
+        <div className="input-number-buttons">
+          <button className="number-increment" onClick={increment} type="button">+</button>
+          <button className="number-decrement" onClick={decrement} type="button">−</button>
+        </div>
+      </div>
+      {hint && <p className="input-hint">{hint}</p>}
+    </div>
+  );
+};
+
+// Custom switch component
+const ToggleSwitch = ({ isChecked, onChange, label, icon }) => {
+  return (
+    <div className="toggle-section">
+      <label className="toggle-label" htmlFor="advanced-toggle">
+        <span className="toggle-icon">{icon}</span>
+        {label}
+      </label>
+      <div className="toggle-switch">
+        <input
+          id="advanced-toggle"
+          type="checkbox"
+          checked={isChecked}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <span className="toggle-switch-slider"></span>
+      </div>
+    </div>
+  );
+};
 
 function ROICalculator() {
   // Patient counts
@@ -184,15 +200,7 @@ function ROICalculator() {
   const [breakEvenMonths, setBreakEvenMonths] = useState(0);
 
   // Show results section
-  const { isOpen: showResults, onOpen: onShowResults } = useDisclosure();
-
-  // Theme colors
-  const primaryColor = useColorModeValue("gold.500", "gold.400");
-  const secondaryColor = useColorModeValue("blue.700", "blue.600");
-  const cardBgColor = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-  const textColor = useColorModeValue("gray.700", "gray.200");
-  const textLightColor = useColorModeValue("gray.500", "gray.400");
+  const [showResults, setShowResults] = useState(false);
 
   // Format currency
   const formatCurrency = (value) => {
@@ -224,13 +232,17 @@ function ROICalculator() {
     setBreakEvenMonths(breakEven);
 
     // Show results
-    onShowResults();
+    setShowResults(true);
 
     // Improved scrolling - wait for state update to complete and DOM to render
     setTimeout(() => {
       const resultsSection = document.getElementById("results-section");
       if (resultsSection) {
-        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Scroll to position
+        resultsSection.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
       }
     }, 300);
   };
@@ -243,14 +255,14 @@ function ROICalculator() {
         label: "Umsatz (€)",
         data: [statutoryRevenue, privateRevenue, selfPayRevenue],
         backgroundColor: [
-          "rgba(49, 130, 206, 0.7)",  // Blue
-          "rgba(49, 130, 206, 0.4)",  // Light blue
-          "rgba(236, 201, 75, 0.7)"   // Gold
+          "rgba(37, 58, 111, 0.7)",  // Secondary color (dark blue)
+          "rgba(37, 58, 111, 0.4)",  // Lighter secondary
+          "rgba(240, 180, 34, 0.7)"  // Primary color (gold)
         ],
         borderColor: [
-          "rgba(49, 130, 206, 1)",    // Blue
-          "rgba(49, 130, 206, 0.8)",  // Light blue
-          "rgba(236, 201, 75, 1)"     // Gold
+          "rgba(37, 58, 111, 1)",    // Secondary color
+          "rgba(37, 58, 111, 0.8)",  // Lighter secondary
+          "rgba(240, 180, 34, 1)"    // Primary color
         ],
         borderWidth: 1,
       },
@@ -267,7 +279,7 @@ function ROICalculator() {
         labels: {
           font: {
             size: 12,
-            family: 'Inter, system-ui, sans-serif'
+            family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
           },
           padding: 15,
           usePointStyle: true,
@@ -280,9 +292,9 @@ function ROICalculator() {
         font: {
           size: 16,
           weight: 600,
-          family: 'Inter, system-ui, sans-serif'
+          family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
         },
-        color: '#2C5282',
+        color: '#253a6f',
         padding: {
           bottom: 15
         }
@@ -307,639 +319,316 @@ function ROICalculator() {
     }
   };
 
-  // Get breakeven color based on months
-  const getBreakevenColor = (months) => {
-    if (months <= 8) return "green";
-    if (months <= 14) return "orange";
-    return "red";
-  };
-
-  // Get breakeven message
-  const getBreakevenMessage = (months) => {
+  // Get progress color and message based on breakeven months
+  const getBreakevenInfo = (months) => {
     if (months <= 8) {
-      return "Ihre geschätzte Amortisationszeit ist hervorragend! Mit " + months + " Monaten werden Sie schneller als der typische Zeitraum von 8-14 Monaten einen Return on Investment sehen.";
+      return { 
+        color: "green",
+        icon: "success",
+        message: `Ihre geschätzte Amortisationszeit ist hervorragend! Mit ${months} Monaten werden Sie schneller als der typische Zeitraum von 8-14 Monaten einen Return on Investment sehen.`
+      };
     } else if (months <= 14) {
-      return "Ihre geschätzte Amortisationszeit von " + months + " Monaten liegt im typischen Bereich von 8-14 Monaten für reLounge-Systeme.";
+      return { 
+        color: "orange",
+        icon: "warning",
+        message: `Ihre geschätzte Amortisationszeit von ${months} Monaten liegt im typischen Bereich von 8-14 Monaten für reLounge-Systeme.`
+      };
     } else {
-      return "Ihre geschätzte Amortisationszeit von " + months + " Monaten ist länger als der typische Bereich von 8-14 Monaten. Erwägen Sie eine Anpassung Ihres Patientenmix oder der Paketangebote, um den ROI zu verbessern.";
+      return { 
+        color: "red",
+        icon: "danger",
+        message: `Ihre geschätzte Amortisationszeit von ${months} Monaten ist länger als der typische Bereich von 8-14 Monaten. Erwägen Sie eine Anpassung Ihres Patientenmix oder der Paketangebote, um den ROI zu verbessern.`
+      };
     }
   };
 
   return (
-    <Container maxW="container.lg" py={8}>
-      <Card 
-        overflow="hidden" 
-        variant="outline" 
-        borderColor={borderColor}
-        bg={cardBgColor} 
-        boxShadow="lg"
-        mb={8}
-        borderRadius="xl"
-      >
-        <CardHeader 
-          bg={cardBgColor} 
-          borderBottomWidth="1px" 
-          borderColor={borderColor}
-          position="relative"
-          pb={4}
-          _after={{
-            content: '""',
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: '4px',
-            height: '100%',
-            bg: 'gold.400'
-          }}
-        >
-          <Stack spacing={1} pl={2}>
-            <Heading as="h2" size="md" color={secondaryColor}>
-              <Flex alignItems="center" gap={2}>
-                <Icon as={UsersIcon} />
-                Patienteninformationen
-              </Flex>
-            </Heading>
-            <Text color={textLightColor} fontSize="sm">
-              Geben Sie die Patientendaten Ihrer Praxis ein, um den potenziellen Umsatz zu berechnen
-            </Text>
-          </Stack>
-        </CardHeader>
+    <div className="roi-calculator">
+      <div className="calculator-card">
+        <div className="card-header">
+          <h2 className="card-title">
+            <UsersIcon />
+            Patienteninformationen
+          </h2>
+          <p className="card-description">
+            Geben Sie die Patientendaten Ihrer Praxis ein, um den potenziellen Umsatz zu berechnen
+          </p>
+        </div>
+        <div className="card-content">
+          {/* Statutory Health Insurance Patients */}
+          <div className="input-section">
+            <h3 className="section-title">
+              <UserIcon />
+              Gesetzlich versicherte Patienten
+            </h3>
+            <div className="input-grid">
+              <NumberInput
+                id="statutory-patients"
+                label="Anzahl der Patienten"
+                value={statutoryPatients}
+                onChange={setStatutoryPatients}
+                hint={`Gebühr pro Sitzung: ${formatCurrency(STATUTORY_FEE)}`}
+              />
 
-        <CardBody pt={6}>
-          <VStack spacing={8} align="stretch">
-            {/* Statutory Health Insurance Patients */}
-            <Box>
-              <Heading as="h3" size="sm" mb={4} color={secondaryColor} position="relative" pb={2} display="flex" alignItems="center">
-                <Icon as={UserCheckIcon} mr={2} />
-                Gesetzlich versicherte Patienten
-                <Box as="span" position="absolute" bottom="0" left="0" width="40px" height="2px" bg="gold.400" />
-              </Heading>
-              
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
-                <GridItem>
-                  <FormControl>
-                    <FormLabel fontWeight="medium" fontSize="sm" color={secondaryColor}>
-                      Anzahl der Patienten
-                    </FormLabel>
-                    <NumberInput 
-                      min={0} 
-                      value={statutoryPatients} 
-                      onChange={(_, val) => setStatutoryPatients(val || 0)}
-                      bg="white"
-                      borderRadius="md"
+              <NumberInput
+                id="statutory-sessions"
+                label="Durchschnittliche Sitzungen pro Patient"
+                value={statutorySessions}
+                onChange={setStatutorySessions}
+                min={1}
+              />
+            </div>
+          </div>
+
+          {/* Private Patients */}
+          <div className="input-section">
+            <h3 className="section-title">
+              <UserIcon />
+              Privatpatienten
+            </h3>
+            <div className="input-grid">
+              <NumberInput
+                id="private-patients"
+                label="Anzahl der Patienten"
+                value={privatePatients}
+                onChange={setPrivatePatients}
+                hint={`Gebühr pro Sitzung: ${formatCurrency(PRIVATE_FEE)}`}
+              />
+
+              <NumberInput
+                id="private-sessions"
+                label="Durchschnittliche Sitzungen pro Patient"
+                value={privateSessions}
+                onChange={setPrivateSessions}
+                min={1}
+              />
+            </div>
+          </div>
+
+          {/* Self-Pay Patients */}
+          <div className="input-section">
+            <h3 className="section-title">
+              <EuroIcon />
+              Selbstzahler
+            </h3>
+            <div className="input-grid">
+              <NumberInput
+                id="self-pay-patients"
+                label="Anzahl der Patienten"
+                value={selfPayPatients}
+                onChange={setSelfPayPatients}
+              />
+
+              <div className="input-group">
+                <label>Paketauswahl</label>
+                <div className="radio-group">
+                  {Object.entries(SELF_PAY_PACKAGES).map(([key, pkg]) => (
+                    <div 
+                      key={key} 
+                      className={`radio-item ${selectedPackage === key ? 'selected' : ''}`}
+                      onClick={() => setSelectedPackage(key)}
                     >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                    <Text fontSize="xs" color={textLightColor} mt={1}>
-                      Gebühr pro Sitzung: {formatCurrency(STATUTORY_FEE)}
-                    </Text>
-                  </FormControl>
-                </GridItem>
-                <GridItem>
-                  <FormControl>
-                    <FormLabel fontWeight="medium" fontSize="sm" color={secondaryColor}>
-                      Durchschnittliche Sitzungen pro Patient
-                    </FormLabel>
-                    <NumberInput 
-                      min={1} 
-                      value={statutorySessions} 
-                      onChange={(_, val) => setStatutorySessions(val || 1)}
-                      bg="white"
-                      borderRadius="md"
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
-                </GridItem>
-              </Grid>
-            </Box>
+                      <input
+                        type="radio"
+                        id={key}
+                        name="package"
+                        value={key}
+                        checked={selectedPackage === key}
+                        onChange={() => setSelectedPackage(key)}
+                      />
+                      <label htmlFor={key}>
+                        {pkg.name} - {formatCurrency(pkg.price)}
+                        <span className="price-per-session">
+                          ({formatCurrency(pkg.price / pkg.sessions)} pro Sitzung)
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
 
-            {/* Private Patients */}
-            <Box>
-              <Heading as="h3" size="sm" mb={4} color={secondaryColor} position="relative" pb={2} display="flex" alignItems="center">
-                <Icon as={UserCheckIcon} mr={2} />
-                Privatpatienten
-                <Box as="span" position="absolute" bottom="0" left="0" width="40px" height="2px" bg="gold.400" />
-              </Heading>
-              
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
-                <GridItem>
-                  <FormControl>
-                    <FormLabel fontWeight="medium" fontSize="sm" color={secondaryColor}>
-                      Anzahl der Patienten
-                    </FormLabel>
-                    <NumberInput 
-                      min={0} 
-                      value={privatePatients} 
-                      onChange={(_, val) => setPrivatePatients(val || 0)}
-                      bg="white"
-                      borderRadius="md"
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                    <Text fontSize="xs" color={textLightColor} mt={1}>
-                      Gebühr pro Sitzung: {formatCurrency(PRIVATE_FEE)}
-                    </Text>
-                  </FormControl>
-                </GridItem>
-                <GridItem>
-                  <FormControl>
-                    <FormLabel fontWeight="medium" fontSize="sm" color={secondaryColor}>
-                      Durchschnittliche Sitzungen pro Patient
-                    </FormLabel>
-                    <NumberInput 
-                      min={1} 
-                      value={privateSessions} 
-                      onChange={(_, val) => setPrivateSessions(val || 1)}
-                      bg="white"
-                      borderRadius="md"
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
-                </GridItem>
-              </Grid>
-            </Box>
+          {/* Advanced Options */}
+          <div className="advanced-options">
+            <ToggleSwitch
+              isChecked={showAdvancedOptions}
+              onChange={setShowAdvancedOptions}
+              label="Erweiterte Optionen anzeigen"
+              icon="⚙️"
+            />
 
-            {/* Self-Pay Patients */}
-            <Box>
-              <Heading as="h3" size="sm" mb={4} color={secondaryColor} position="relative" pb={2} display="flex" alignItems="center">
-                <Icon as={EuroIcon} mr={2} />
-                Selbstzahler
-                <Box as="span" position="absolute" bottom="0" left="0" width="40px" height="2px" bg="gold.400" />
-              </Heading>
-              
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
-                <GridItem>
-                  <FormControl>
-                    <FormLabel fontWeight="medium" fontSize="sm" color={secondaryColor}>
-                      Anzahl der Patienten
-                    </FormLabel>
-                    <NumberInput 
-                      min={0} 
-                      value={selfPayPatients} 
-                      onChange={(_, val) => setSelfPayPatients(val || 0)}
-                      bg="white"
-                      borderRadius="md"
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
-                </GridItem>
-                <GridItem>
-                  <FormControl>
-                    <FormLabel fontWeight="medium" fontSize="sm" color={secondaryColor}>
-                      Paketauswahl
-                    </FormLabel>
-                    <RadioGroup value={selectedPackage} onChange={setSelectedPackage}>
-                      <VStack align="stretch" spacing={2}>
-                        {Object.entries(SELF_PAY_PACKAGES).map(([key, pkg]) => (
-                          <Card 
-                            key={key} 
-                            borderWidth="1px" 
-                            borderColor={selectedPackage === key ? "gold.400" : "gray.200"}
-                            bg={selectedPackage === key ? "gold.50" : "white"}
-                            boxShadow={selectedPackage === key ? "md" : "none"}
-                            borderRadius="md"
-                            transition="all 0.2s"
-                            _hover={{ 
-                              borderColor: "gold.400",
-                              transform: "translateY(-2px)",
-                              boxShadow: "sm"
-                            }}
-                          >
-                            <CardBody py={2} px={3}>
-                              <Radio value={key} colorScheme="yellow">
-                                <Flex direction="column">
-                                  <Text fontWeight="medium">{pkg.name} - {formatCurrency(pkg.price)}</Text>
-                                  <Text fontSize="xs" color={textLightColor}>
-                                    ({formatCurrency(pkg.price / pkg.sessions)} pro Sitzung)
-                                  </Text>
-                                </Flex>
-                              </Radio>
-                            </CardBody>
-                          </Card>
-                        ))}
-                      </VStack>
-                    </RadioGroup>
-                  </FormControl>
-                </GridItem>
-              </Grid>
-            </Box>
+            {showAdvancedOptions && (
+              <div className="advanced-inputs">
+                <NumberInput
+                  id="system-cost"
+                  label="reLounge Systemkosten (€)"
+                  value={systemCost}
+                  onChange={setSystemCost}
+                />
 
-            {/* Advanced Options */}
-            <Card
-              bg="gray.50"
-              borderRadius="lg"
-              borderWidth="1px"
-              borderColor={borderColor}
-              overflow="hidden"
-            >
-              <CardBody p={5}>
-                <Flex justifyContent="space-between" alignItems="center" mb={showAdvancedOptions ? 4 : 0}>
-                  <HStack>
-                    <Icon as={SettingsIcon} color="gold.500" />
-                    <Text fontWeight="medium" color={secondaryColor}>Erweiterte Optionen</Text>
-                  </HStack>
-                  <Switch 
-                    colorScheme="yellow" 
-                    isChecked={showAdvancedOptions} 
-                    onChange={(e) => setShowAdvancedOptions(e.target.checked)}
-                  />
-                </Flex>
+                <NumberInput
+                  id="monthly-expenses"
+                  label="Monatliche Betriebskosten (€)"
+                  value={monthlyExpenses}
+                  onChange={setMonthlyExpenses}
+                  hint="Inklusive Strom, Wartung, etc."
+                />
+              </div>
+            )}
+          </div>
 
-                {showAdvancedOptions && (
-                  <Box
-                    opacity={showAdvancedOptions ? 1 : 0}
-                    transform={showAdvancedOptions ? "scale(1)" : "scale(0.9)"}
-                    transition="all 0.3s ease"
-                  >
-                    <VStack align="stretch" spacing={4} mt={4} pt={4} borderTopWidth="1px" borderColor="gray.200">
-                      <FormControl>
-                        <FormLabel fontWeight="medium" fontSize="sm" color={secondaryColor}>
-                          reLounge Systemkosten (€)
-                        </FormLabel>
-                        <NumberInput 
-                          min={0} 
-                          value={systemCost} 
-                          onChange={(_, val) => setSystemCost(val || 0)}
-                          bg="white"
-                          borderRadius="md"
-                        >
-                          <NumberInputField />
-                          <NumberInputStepper>
-                            <NumberIncrementStepper />
-                            <NumberDecrementStepper />
-                          </NumberInputStepper>
-                        </NumberInput>
-                      </FormControl>
-
-                      <FormControl>
-                        <FormLabel fontWeight="medium" fontSize="sm" color={secondaryColor}>
-                          Monatliche Betriebskosten (€)
-                        </FormLabel>
-                        <NumberInput 
-                          min={0} 
-                          value={monthlyExpenses} 
-                          onChange={(_, val) => setMonthlyExpenses(val || 0)}
-                          bg="white"
-                          borderRadius="md"
-                        >
-                          <NumberInputField />
-                          <NumberInputStepper>
-                            <NumberIncrementStepper />
-                            <NumberDecrementStepper />
-                          </NumberInputStepper>
-                        </NumberInput>
-                        <Text fontSize="xs" color={textLightColor} mt={1}>
-                          Inklusive Strom, Wartung, etc.
-                        </Text>
-                      </FormControl>
-                    </VStack>
-                  </Box>
-                )}
-              </CardBody>
-            </Card>
-
-            {/* Calculate Button */}
-            <Flex justifyContent="center" mt={4}>
-              <Button
-                onClick={calculateResults}
-                colorScheme="yellow"
-                size="lg"
-                borderRadius="full"
-                px={8}
-                py={6}
-                fontWeight="bold"
-                boxShadow="lg"
-                _hover={{ 
-                  transform: "translateY(-2px)",
-                  boxShadow: "xl"
-                }}
-                leftIcon={<Icon as={CalculatorIcon} />}
-              >
-                Ergebnisse berechnen
-              </Button>
-            </Flex>
-          </VStack>
-        </CardBody>
-      </Card>
+          {/* Calculate Button */}
+          <div className="button-container">
+            <button onClick={calculateResults} className="calculate-button">
+              <CalculatorIcon />
+              Ergebnisse berechnen
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Results Section */}
-      <Box
-        id="results-section"
-        mt={12}
-        opacity={showResults ? 1 : 0}
-        height={showResults ? "auto" : "0"}
-        transform={showResults ? "translateY(0)" : "translateY(20px)"}
-        transition="all 0.5s ease"
-        overflow={showResults ? "visible" : "hidden"}
-      >
-        {showResults && (
-          <>
-            <Flex justifyContent="center" mb={6}>
-              <Badge
-                borderRadius="full"
-                px={6}
-                py={2}
-                colorScheme="blue"
-                fontSize="md"
-                fontWeight="medium"
-                display="flex"
-                alignItems="center"
-              >
-                <ChevronDownIcon mr={1} /> Ihre Ergebnisse
-              </Badge>
-            </Flex>
+      {showResults && (
+        <div id="results-section" className="results-container">
+          <div className="results-indicator">
+            <ChevronDownIcon />
+            <span>Ihre Ergebnisse</span>
+          </div>
 
-            <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6} mb={6}>
-              <GridItem>
-                <Card 
-                  overflow="hidden" 
-                  variant="outline" 
-                  borderColor={borderColor}
-                  bg={cardBgColor} 
-                  boxShadow="lg"
-                  borderRadius="xl"
-                  height="100%"
-                >
-                  <CardHeader 
-                    bg={cardBgColor} 
-                    borderBottomWidth="1px" 
-                    borderColor={borderColor}
-                    position="relative"
-                    pb={4}
-                    _after={{
-                      content: '""',
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      width: '4px',
-                      height: '100%',
-                      bg: 'gold.400'
-                    }}
-                  >
-                    <Stack spacing={1} pl={2}>
-                      <Heading as="h2" size="md" color={secondaryColor} display="flex" alignItems="center">
-                        <Icon as={DollarIcon} mr={2} />
-                        Umsatzübersicht
-                      </Heading>
-                      <Text color={textLightColor} fontSize="sm">
-                        Geschätzter Umsatz basierend auf Ihren Eingaben
-                      </Text>
-                    </Stack>
-                  </CardHeader>
+          <div className="results-grid">
+            <div className="results-card">
+              <div className="card-header">
+                <h2 className="card-title">
+                  <EuroCircleIcon />
+                  Umsatzübersicht
+                </h2>
+                <p className="card-description">Geschätzter Umsatz basierend auf Ihren Eingaben</p>
+              </div>
+              <div className="card-content">
+                <div className="revenue-summary">
+                  <div className="revenue-item">
+                    <span>Umsatz gesetzlich Versicherte:</span>
+                    <span className="revenue-value">{formatCurrency(statutoryRevenue)}</span>
+                  </div>
+                  <div className="revenue-item">
+                    <span>Umsatz Privatpatienten:</span>
+                    <span className="revenue-value">{formatCurrency(privateRevenue)}</span>
+                  </div>
+                  <div className="revenue-item">
+                    <span>Umsatz Selbstzahler:</span>
+                    <span className="revenue-value">{formatCurrency(selfPayRevenue)}</span>
+                  </div>
+                  <div className="total-revenue">
+                    <span>Gesamtumsatz:</span>
+                    <span className="total-value">{formatCurrency(totalRevenue)}</span>
+                  </div>
+                </div>
 
-                  <CardBody>
-                    <VStack spacing={4} align="stretch">
-                      <Box>
-                        <Text color={textLightColor} fontSize="sm">Umsatz gesetzlich Versicherte</Text>
-                        <Text color="blue.600" fontSize="lg" fontWeight="bold">{formatCurrency(statutoryRevenue)}</Text>
-                      </Box>
-                      <Divider />
-                      
-                      <Box>
-                        <Text color={textLightColor} fontSize="sm">Umsatz Privatpatienten</Text>
-                        <Text color="blue.600" fontSize="lg" fontWeight="bold">{formatCurrency(privateRevenue)}</Text>
-                      </Box>
-                      <Divider />
-                      
-                      <Box>
-                        <Text color={textLightColor} fontSize="sm">Umsatz Selbstzahler</Text>
-                        <Text color="blue.600" fontSize="lg" fontWeight="bold">{formatCurrency(selfPayRevenue)}</Text>
-                      </Box>
-                      <Divider />
-                      
-                      <Box>
-                        <Text fontSize="lg" fontWeight="bold">Gesamtumsatz</Text>
-                        <Text fontSize="2xl" color="gold.500" fontWeight="bold">
-                          {formatCurrency(totalRevenue)}
-                        </Text>
-                      </Box>
-                      
-                      {showAdvancedOptions && (
-                        <>
-                          <Divider borderWidth="2px" />
-                          <Heading as="h3" size="sm" color={secondaryColor} mb={2}>
-                            Return on Investment
-                          </Heading>
-                          
-                          <HStack justify="space-between">
-                            <Text>Systemkosten:</Text>
-                            <Text fontWeight="medium">{formatCurrency(systemCost)}</Text>
-                          </HStack>
-                          
-                          <HStack justify="space-between">
-                            <Text>Monatliche Betriebskosten:</Text>
-                            <Text fontWeight="medium">{formatCurrency(monthlyExpenses)}</Text>
-                          </HStack>
-                          
-                          <HStack justify="space-between">
-                            <Text>Monatlicher Nettoertrag:</Text>
-                            <Text fontWeight="bold" color="blue.600">
-                              {formatCurrency(totalRevenue - monthlyExpenses)}
-                            </Text>
-                          </HStack>
-                          
-                          <HStack justify="space-between">
-                            <Text>Geschätzte Amortisationszeit:</Text>
-                            <Text fontWeight="bold" color="blue.600">
-                              {breakEvenMonths > 0 ? `${breakEvenMonths} Monate` : "N/A"}
-                            </Text>
-                          </HStack>
-                        </>
-                      )}
-                    </VStack>
-                  </CardBody>
-                </Card>
-              </GridItem>
+                {showAdvancedOptions && (
+                  <div className="roi-summary">
+                    <h3>Return on Investment</h3>
+                    <div className="roi-item">
+                      <span>Systemkosten:</span>
+                      <span>{formatCurrency(systemCost)}</span>
+                    </div>
+                    <div className="roi-item">
+                      <span>Monatliche Betriebskosten:</span>
+                      <span>{formatCurrency(monthlyExpenses)}</span>
+                    </div>
+                    <div className="roi-item">
+                      <span>Monatlicher Nettoertrag:</span>
+                      <span className="revenue-value">{formatCurrency(totalRevenue - monthlyExpenses)}</span>
+                    </div>
+                    <div className="roi-item">
+                      <span>Geschätzte Amortisationszeit:</span>
+                      <span className="revenue-value">
+                        {breakEvenMonths > 0 ? `${breakEvenMonths} Monate` : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
-              <GridItem>
-                <Card 
-                  overflow="hidden" 
-                  variant="outline" 
-                  borderColor={borderColor}
-                  bg={cardBgColor} 
-                  boxShadow="lg"
-                  borderRadius="xl"
-                  height="100%"
-                >
-                  <CardHeader 
-                    bg={cardBgColor} 
-                    borderBottomWidth="1px" 
-                    borderColor={borderColor}
-                    position="relative"
-                    pb={4}
-                    _after={{
-                      content: '""',
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      width: '4px',
-                      height: '100%',
-                      bg: 'gold.400'
-                    }}
-                  >
-                    <Stack spacing={1} pl={2}>
-                      <Heading as="h2" size="md" color={secondaryColor} display="flex" alignItems="center">
-                        <Icon as={PieChartIcon} mr={2} />
-                        Umsatzvisualisierung
-                      </Heading>
-                      <Text color={textLightColor} fontSize="sm">
-                        Grafische Darstellung Ihrer Umsatzströme
-                      </Text>
-                    </Stack>
-                  </CardHeader>
+            <div className="results-card">
+              <div className="card-header">
+                <h2 className="card-title">
+                  <ChartIcon />
+                  Umsatzvisualisierung
+                </h2>
+                <p className="card-description">Grafische Darstellung Ihrer Umsatzströme</p>
+              </div>
+              <div className="card-content">
+                <div className="chart-container">
+                  {totalRevenue > 0 ? (
+                    <Pie data={revenueChartData} options={chartOptions} />
+                  ) : (
+                    <div className="empty-chart">
+                      Geben Sie Patientendaten ein, um die Umsatzvisualisierung zu sehen
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
-                  <CardBody>
-                    <Box height="300px" display="flex" justifyContent="center" alignItems="center" p={2}>
-                      {totalRevenue > 0 ? (
-                        <Pie data={revenueChartData} options={chartOptions} />
-                      ) : (
-                        <Box 
-                          textAlign="center" 
-                          bg="gray.50" 
-                          p={6} 
-                          borderRadius="md" 
-                          color={textLightColor}
-                          fontStyle="italic"
-                          width="100%"
-                        >
-                          Geben Sie Patientendaten ein, um die Umsatzvisualisierung zu sehen
-                        </Box>
-                      )}
-                    </Box>
-                  </CardBody>
-                </Card>
-              </GridItem>
-            </Grid>
-
-            {showAdvancedOptions && breakEvenMonths > 0 && (
-              <Card 
-                overflow="hidden" 
-                variant="outline" 
-                borderColor={borderColor}
-                bg={cardBgColor} 
-                boxShadow="lg"
-                borderRadius="xl"
-                mb={6}
-              >
-                <CardHeader 
-                  bg={cardBgColor} 
-                  borderBottomWidth="1px" 
-                  borderColor={borderColor}
-                  position="relative"
-                  pb={4}
-                  _after={{
-                    content: '""',
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    width: '4px',
-                    height: '100%',
-                    bg: 'gold.400'
-                  }}
-                >
-                  <Stack spacing={1} pl={2}>
-                    <Heading as="h2" size="md" color={secondaryColor} display="flex" alignItems="center">
-                      <Icon as={ClockIcon} mr={2} />
-                      Amortisationsanalyse
-                    </Heading>
-                    <Text color={textLightColor} fontSize="sm">
-                      Visualisierung Ihres Return on Investment im Zeitverlauf
-                    </Text>
-                  </Stack>
-                </CardHeader>
-
-                <CardBody p={6}>
-                  <VStack spacing={5} align="stretch">
-                    <Flex justifyContent="space-between" alignItems="center">
-                      <Badge 
-                        colorScheme={getBreakevenColor(breakEvenMonths)} 
-                        p={2} 
-                        fontSize="sm" 
-                        borderRadius="md"
-                      >
+          {showAdvancedOptions && breakEvenMonths > 0 && (
+            <div className="results-card">
+              <div className="card-header">
+                <h2 className="card-title">
+                  <ClockIcon />
+                  Amortisationsanalyse
+                </h2>
+                <p className="card-description">Visualisierung Ihres Return on Investment im Zeitverlauf</p>
+              </div>
+              <div className="card-content">
+                <div className="breakeven-analysis">
+                  <div className="progress-section">
+                    <div className="progress-header">
+                      <div className="progress-label">
                         {Math.min(100, Math.round((breakEvenMonths / 24) * 100))}% bis zur Amortisation
-                      </Badge>
-                      <Text fontWeight="bold">{breakEvenMonths} Monate</Text>
-                    </Flex>
-                    
-                    <Box>
-                      <Progress 
-                        value={Math.min(100, (breakEvenMonths / 24) * 100)} 
-                        colorScheme={getBreakevenColor(breakEvenMonths)}
-                        size="sm"
-                        borderRadius="full"
-                        mb={2}
-                      />
-                      <Flex justifyContent="space-between" fontSize="xs" color={textLightColor}>
-                        <Text>0</Text>
-                        <Text>6</Text>
-                        <Text>12</Text>
-                        <Text>18</Text>
-                        <Text>24+ Monate</Text>
-                      </Flex>
-                    </Box>
-                    
-                    <Box 
-                      bg="blue.50" 
-                      p={4} 
-                      borderRadius="md" 
-                      fontSize="sm"
-                      lineHeight="1.6"
-                    >
-                      <HStack mb={1}>
-                        <InfoIcon color={`${getBreakevenColor(breakEvenMonths)}.500`} />
-                        <Text fontWeight="medium" color={`${getBreakevenColor(breakEvenMonths)}.700`}>
-                          ROI Analyse
-                        </Text>
-                      </HStack>
-                      <Text>{getBreakevenMessage(breakEvenMonths)}</Text>
-                    </Box>
-                  </VStack>
-                </CardBody>
-              </Card>
-            )}
+                      </div>
+                      <div className="progress-value">{breakEvenMonths} Monate</div>
+                    </div>
+                    <div className="progress-bar-container">
+                      <div
+                        className="progress-bar"
+                        style={{ width: `${Math.min(100, (breakEvenMonths / 24) * 100)}%` }}
+                      ></div>
+                    </div>
+                    <div className="progress-timeline">
+                      <span>0</span>
+                      <span>6</span>
+                      <span>12</span>
+                      <span>18</span>
+                      <span>24+ Monate</span>
+                    </div>
+                  </div>
 
-            <Flex justifyContent="center" mt={8}>
-              <Button
-                leftIcon={<Icon as={FileDownIcon} />}
-                colorScheme="blue"
-                size="lg"
-                borderRadius="full"
-                width={{ base: "full", md: "auto" }}
-                maxWidth="300px"
-                boxShadow="md"
-                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-              >
-                Bericht herunterladen
-              </Button>
-            </Flex>
-          </>
-        )}
-      </Box>
-    </Container>
+                  <div className="breakeven-message">
+                    <div className="message-header">
+                      <InfoIcon />
+                      <span className={`message-header-text message-header-${getBreakevenInfo(breakEvenMonths).icon}`}>
+                        ROI Analyse
+                      </span>
+                    </div>
+                    <p>{getBreakevenInfo(breakEvenMonths).message}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="download-section">
+            <button className="download-button">
+              <DownloadIcon />
+              Bericht herunterladen
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
