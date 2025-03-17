@@ -373,30 +373,103 @@ function ROICalculator() {
         format: 'a4'
       });
       
-      // PDF title and header
+      // Add a styled header with logo-like design
+      // Blue background header
+      pdf.setFillColor(37, 58, 111);
+      pdf.rect(0, 0, 210, 35, 'F');
+      
+      // Golden stripe
+      pdf.setFillColor(240, 180, 34);
+      pdf.rect(0, 35, 210, 4, 'F');
+      
+      // Title text
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(20);
-      pdf.setTextColor(37, 58, 111); // Secondary color
-      pdf.text("reLounge ROI Kalkulationsbericht", 105, 20, { align: "center" });
+      pdf.setFontSize(24);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text("reLounge ROI Kalkulation", 20, 20);
       
       pdf.setFontSize(12);
-      pdf.setTextColor(100, 100, 100);
-      pdf.text("Erstellt am " + new Date().toLocaleDateString("de-DE"), 105, 30, { align: "center" });
+      pdf.text("Detaillierter Bericht für Ihre Praxis", 20, 28);
+      
+      // Date in the top right
+      pdf.setFontSize(10);
+      pdf.setTextColor(220, 220, 220);
+      const dateString = "Erstellt: " + new Date().toLocaleDateString("de-DE") + " " + 
+                        new Date().toLocaleTimeString("de-DE", {hour: '2-digit', minute:'2-digit'});
+      pdf.text(dateString, 190, 20, { align: "right" });
+      
+      // Executive Summary Section
+      const summaryY = 50;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(16);
+      pdf.setTextColor(37, 58, 111);
+      pdf.text("Zusammenfassung", 20, summaryY);
       
       // Horizontal line
-      pdf.setDrawColor(240, 180, 34); // Primary color
+      pdf.setDrawColor(240, 180, 34);
       pdf.setLineWidth(0.5);
-      pdf.line(20, 35, 190, 35);
+      pdf.line(20, summaryY + 2, 80, summaryY + 2);
+      
+      // Summary text
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(11);
+      pdf.setTextColor(60, 60, 60);
+      
+      const summaryText = [
+        `Dieser Bericht analysiert die potenzielle Rentabilität eines reLounge Therapiesystems`,
+        `basierend auf ${statutoryPatients + privatePatients + selfPayPatients} Patienten und einem geschätzten monatlichen Umsatz`,
+        `von ${formatCurrency(totalRevenue)}.`,
+        "",
+        `Die wichtigsten Kennzahlen im Überblick:`,
+      ];
+      
+      pdf.text(summaryText, 20, summaryY + 10);
+      
+      // Key metrics in a nice box
+      pdf.setFillColor(248, 248, 252);
+      pdf.roundedRect(20, summaryY + 30, 170, 30, 3, 3, 'F');
+      
+      // Metric titles
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text("Gesamtumsatz:", 30, summaryY + 40);
+      pdf.text("Patienten (gesamt):", 80, summaryY + 40);
+      pdf.text("Amortisationszeit:", 140, summaryY + 40);
+      
+      // Metric values
+      pdf.setFontSize(14);
+      pdf.setTextColor(37, 58, 111);
+      pdf.text(formatCurrency(totalRevenue), 30, summaryY + 52);
+      pdf.text(`${statutoryPatients + privatePatients + selfPayPatients}`, 80, summaryY + 52);
+      
+      // Use color coding for the payback period
+      const breakEvenInfo = getBreakevenInfo(breakEvenMonths);
+      if (breakEvenInfo.color === "green") {
+        pdf.setTextColor(0, 140, 0);
+      } else if (breakEvenInfo.color === "orange") {
+        pdf.setTextColor(200, 120, 0);
+      } else {
+        pdf.setTextColor(180, 0, 0);
+      }
+      pdf.text(`${breakEvenMonths} Monate`, 140, summaryY + 52);
       
       // Patient Information Section
+      const patientSectionY = summaryY + 70;
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(14);
       pdf.setTextColor(37, 58, 111);
-      pdf.text("Patienteninformationen", 20, 45);
+      pdf.text("1. Patientenübersicht", 20, patientSectionY);
       
-      // Patient table
+      // Description text
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.setTextColor(80, 80, 80);
+      pdf.text("Aufschlüsselung der Einnahmen nach Patientengruppen und Leistungen", 20, patientSectionY + 8);
+      
+      // Patient table with styled header
       autoTable(pdf, {
-        startY: 50,
+        startY: patientSectionY + 12,
         head: [['Patientengruppe', 'Anzahl', 'Sitzungen/Patient', 'Gebühr/Sitzung', 'Gesamtumsatz']],
         body: [
           ['Gesetzlich versicherte', 
@@ -419,14 +492,28 @@ function ROICalculator() {
           ],
         ],
         theme: 'grid',
-        styles: { fontSize: 10, cellPadding: 5 },
-        headStyles: { fillColor: [37, 58, 111], textColor: [255, 255, 255] },
+        styles: { 
+          fontSize: 10, 
+          cellPadding: 6,
+          lineColor: [200, 200, 200]
+        },
+        headStyles: { 
+          fillColor: [37, 58, 111], 
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
         columnStyles: { 
           0: { fontStyle: 'bold' }, 
           4: { halign: 'right', fontStyle: 'bold' } 
         },
         foot: [['Gesamt', '', '', '', formatCurrency(totalRevenue)]],
-        footStyles: { fillColor: [240, 180, 34, 0.1], textColor: [0, 0, 0], fontStyle: 'bold' }
+        footStyles: { 
+          fillColor: [240, 180, 34, 0.15], 
+          textColor: [60, 60, 60], 
+          fontStyle: 'bold',
+          fontSize: 11
+        }
       });
       
       // Get the Y position after the table
@@ -437,114 +524,471 @@ function ROICalculator() {
         } else if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
           packageY = pdf.previousAutoTable.finalY + 10;
         } else {
-          packageY = 120; // Default if no table info available
+          packageY = patientSectionY + 70; // Default if no table info available
         }
       } catch (e) {
-        packageY = 120; // Fallback
+        packageY = patientSectionY + 70; // Fallback
       }
-      pdf.setFontSize(12);
+      
+      // Selbstzahler package information in a nice box
+      pdf.setFillColor(240, 180, 34, 0.1);
+      pdf.roundedRect(20, packageY, 170, 20, 2, 2, 'F');
+      
+      pdf.setFontSize(11);
       pdf.setFont("helvetica", "bold");
-      pdf.text("Gewähltes Selbstzahlerpaket:", 20, packageY);
+      pdf.setTextColor(37, 58, 111);
+      pdf.text("Gewähltes Selbstzahlerpaket:", 25, packageY + 7);
       
       pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(60, 60, 60);
       const selectedPkg = SELF_PAY_PACKAGES[selectedPackage];
-      pdf.text(`${selectedPkg.name} - ${formatCurrency(selectedPkg.price)} (${formatCurrency(selectedPkg.price / selectedPkg.sessions)} pro Sitzung)`, 85, packageY);
+      pdf.text(`${selectedPkg.name} - ${formatCurrency(selectedPkg.price)} (${selectedPkg.sessions} Sitzungen à ${formatCurrency(selectedPkg.price / selectedPkg.sessions)})`, 25, packageY + 15);
       
-      // Revenue chart section
+      // Revenue Visualization Section
+      const chartSectionY = packageY + 30;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(14);
+      pdf.setTextColor(37, 58, 111);
+      pdf.text("2. Umsatzvisualisierung", 20, chartSectionY);
+      
+      // Description text
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.setTextColor(80, 80, 80);
+      pdf.text("Grafische Darstellung der Umsatzverteilung nach Patientengruppen", 20, chartSectionY + 8);
+      
+      // Add donut chart with improved styling
       if (chartRef.current) {
-        const chartY = packageY + 20;
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(14);
-        pdf.setTextColor(37, 58, 111);
-        pdf.text("Umsatzvisualisierung", 105, chartY, { align: "center" });
-        
-        // Convert the chart to an image
-        const chartCanvas = await html2canvas(chartRef.current.canvas);
-        const chartImgData = chartCanvas.toDataURL('image/png');
-        
-        // Add the chart image to the PDF
-        pdf.addImage(chartImgData, 'PNG', 55, chartY + 5, 100, 80);
+        try {
+          // Get chart and make canvas for it
+          const chartCanvas = await html2canvas(chartRef.current.canvas);
+          const chartImgData = chartCanvas.toDataURL('image/png', 1.0);
+          
+          // Add explanatory text beside the chart
+          pdf.setFillColor(248, 248, 252);
+          pdf.roundedRect(20, chartSectionY + 12, 170, 100, 3, 3, 'F');
+          
+          // Add the chart image to the PDF with improved position and sizing
+          pdf.addImage(chartImgData, 'PNG', 30, chartSectionY + 22, 80, 80);
+          
+          // Add legend with percentages
+          const total = statutoryRevenue + privateRevenue + selfPayRevenue;
+          const statPct = Math.round((statutoryRevenue / total) * 100);
+          const privatePct = Math.round((privateRevenue / total) * 100);
+          const selfPayPct = Math.round((selfPayRevenue / total) * 100);
+          
+          // Legend titles
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(10);
+          pdf.setTextColor(37, 58, 111);
+          pdf.text("Umsatzverteilung:", 120, chartSectionY + 35);
+          
+          // Legend items with color boxes
+          pdf.setFontSize(9);
+          pdf.setFillColor(37, 58, 111, 0.7);
+          pdf.rect(120, chartSectionY + 45, 5, 5, 'F');
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(60, 60, 60);
+          pdf.text(`Gesetzlich: ${statPct}% (${formatCurrency(statutoryRevenue)})`, 130, chartSectionY + 48);
+          
+          pdf.setFillColor(37, 58, 111, 0.4);
+          pdf.rect(120, chartSectionY + 55, 5, 5, 'F');
+          pdf.text(`Privat: ${privatePct}% (${formatCurrency(privateRevenue)})`, 130, chartSectionY + 58);
+          
+          pdf.setFillColor(240, 180, 34, 0.7);
+          pdf.rect(120, chartSectionY + 65, 5, 5, 'F');
+          pdf.text(`Selbstzahler: ${selfPayPct}% (${formatCurrency(selfPayRevenue)})`, 130, chartSectionY + 68);
+          
+          // Add a brief analysis
+          pdf.setFillColor(240, 180, 34, 0.1);
+          pdf.roundedRect(120, chartSectionY + 78, 70, 24, 2, 2, 'F');
+          pdf.setFontSize(8);
+          pdf.setFont("helvetica", "italic");
+          
+          let analysisText = "Für optimale Profitabilität empfehlen wir";
+          if (selfPayPct < 20) {
+            analysisText += " einen höheren Anteil an Selbstzahlern.";
+          } else if (privatePct < 15) {
+            analysisText += " einen höheren Anteil an Privatpatienten.";
+          } else {
+            analysisText += " die aktuelle Patientenverteilung beizubehalten.";
+          }
+          
+          const splitAnalysis = pdf.splitTextToSize(analysisText, 65);
+          pdf.text(splitAnalysis, 122, chartSectionY + 85);
+        } catch (e) {
+          // If chart capture fails, add a text note
+          pdf.setFont("helvetica", "italic");
+          pdf.setFontSize(10);
+          pdf.text("Umsatzvisualisierung konnte nicht generiert werden.", 20, chartSectionY + 30);
+          console.error("Chart generation error:", e);
+        }
       }
       
       // ROI Analysis Section (only if advanced options were shown)
       if (showAdvancedOptions) {
-        // Calculate a safe Y position for ROI section
-        let roiY = 170;
+        // Calculate safe Y position for ROI section (if we have a chart, add 130 to its position)
+        let roiY = chartSectionY + 130;
         try {
+          // Try to get position after chart
           if (chartRef.current) {
-            // If we have a chart, position below the chart
-            roiY = packageY + 100;
+            // We already positioned relative to chart
           } else if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
             roiY = pdf.lastAutoTable.finalY + 20;
           } else if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
             roiY = pdf.previousAutoTable.finalY + 20;
           }
         } catch (e) {
-          roiY = packageY + 100; // Fallback
+          // Keep default
         }
         
+        // Add new page if we're too far down
+        if (roiY > 240) {
+          pdf.addPage();
+          roiY = 30;
+        }
+        
+        // ROI section title
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(14);
         pdf.setTextColor(37, 58, 111);
-        pdf.text("ROI Analyse", 20, roiY);
+        pdf.text("3. Return on Investment Analyse", 20, roiY);
         
+        // Description text
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.setTextColor(80, 80, 80);
+        pdf.text("Detaillierte Kostenbetrachtung und Amortisationsberechnung", 20, roiY + 8);
+        
+        // Add a visual progress bar for the ROI
+        const monthsTillBreakEven = breakEvenMonths;
+        pdf.setFillColor(248, 248, 252);
+        pdf.roundedRect(20, roiY + 12, 170, 25, 3, 3, 'F');
+        
+        // Progress track
+        pdf.setFillColor(220, 220, 220);
+        pdf.roundedRect(30, roiY + 22, 150, 6, 3, 3, 'F');
+        
+        // Progress fill - calculate percentage but cap at 100%
+        const progressPct = Math.min(100, (monthsTillBreakEven / 24) * 100);
+        const progressWidth = 150 * (progressPct / 100);
+        
+        // Set color based on timeframe
+        let progressColor;
+        if (monthsTillBreakEven <= 8) {
+          progressColor = [0, 160, 0]; // Green
+        } else if (monthsTillBreakEven <= 14) {
+          progressColor = [240, 180, 34]; // Gold/Orange
+        } else {
+          progressColor = [200, 30, 30]; // Red
+        }
+        
+        // Draw progress bar with appropriate color
+        pdf.setFillColor(...progressColor);
+        if (progressWidth > 0) {
+          pdf.roundedRect(30, roiY + 22, progressWidth, 6, 3, 3, 'F');
+        }
+        
+        // Add markers for months
+        pdf.setFontSize(7);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text("0", 30, roiY + 34);
+        pdf.text("6", 67.5, roiY + 34);
+        pdf.text("12", 105, roiY + 34);
+        pdf.text("18", 142.5, roiY + 34);
+        pdf.text("24+", 180, roiY + 34);
+        
+        // Add month indicator
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9);
+        pdf.setTextColor(...progressColor);
+        pdf.text(`${monthsTillBreakEven} Monate bis zur Amortisation`, 105, roiY + 18, { align: "center" });
+        
+        // Financial data table
         autoTable(pdf, {
-          startY: roiY + 5,
-          head: [['Parameter', 'Wert']],
+          startY: roiY + 40,
+          head: [['Finanzparameter', 'Wert']],
           body: [
-            ['Systemkosten', formatCurrency(systemCost)],
+            ['Systemkosten (einmalig)', formatCurrency(systemCost)],
             ['Monatliche Betriebskosten', formatCurrency(monthlyExpenses)],
+            ['Monatlicher Umsatz (brutto)', formatCurrency(totalRevenue)],
             ['Monatlicher Nettoertrag', formatCurrency(totalRevenue - monthlyExpenses)],
-            ['Geschätzte Amortisationszeit', `${breakEvenMonths} Monate`]
+            ['Geschätzte Amortisationszeit', `${breakEvenMonths} Monate`],
+            ['Jährlicher ROI nach Amortisation', 
+             `${Math.round(((totalRevenue - monthlyExpenses) * 12 / systemCost) * 100)}%`]
           ],
           theme: 'grid',
-          styles: { fontSize: 10, cellPadding: 5 },
-          headStyles: { fillColor: [37, 58, 111], textColor: [255, 255, 255] },
-          columnStyles: { 0: { fontStyle: 'bold' } },
+          styles: { 
+            fontSize: 10, 
+            cellPadding: 5,
+            lineColor: [200, 200, 200]
+          },
+          headStyles: { 
+            fillColor: [37, 58, 111], 
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
+          columnStyles: { 
+            0: { fontStyle: 'bold' },
+            1: { halign: 'right' }
+          },
+          alternateRowStyles: {
+            fillColor: [248, 248, 252]
+          }
         });
         
         // ROI Analysis message
-        let messageY = roiY + 70; // Default position
+        let messageY = roiY + 115; // Default position
         try {
           if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) {
-            messageY = pdf.lastAutoTable.finalY + 10;
+            messageY = pdf.lastAutoTable.finalY + 15;
           } else if (pdf.previousAutoTable && pdf.previousAutoTable.finalY) {
-            messageY = pdf.previousAutoTable.finalY + 10;
+            messageY = pdf.previousAutoTable.finalY + 15;
           }
         } catch (e) {
           // Keep default
         }
+        
+        // Add recommendation box with color-coded border
         const breakEvenInfo = getBreakevenInfo(breakEvenMonths);
+        const boxBorderColor = breakEvenInfo.color === "green" ? [0, 140, 0] : 
+                              breakEvenInfo.color === "orange" ? [240, 140, 0] : [180, 0, 0];
         
-        pdf.setFontSize(12);
+        // Draw box with custom border
+        pdf.setFillColor(250, 250, 250);
+        pdf.rect(20, messageY, 170, 35, 'F');
+        
+        // Add colored border
+        pdf.setDrawColor(...boxBorderColor);
+        pdf.setLineWidth(1);
+        pdf.rect(20, messageY, 170, 35, 'S');
+        
+        // Add vertical accent line
+        pdf.setLineWidth(4);
+        pdf.line(20, messageY, 20, messageY + 35);
+        
+        // Add heading with assessment
         pdf.setFont("helvetica", "bold");
-        pdf.text("ROI Bewertung:", 20, messageY);
+        pdf.setFontSize(11);
+        pdf.setTextColor(...boxBorderColor);
         
-        // Add colored icon based on breakeven status
-        const iconColor = breakEvenInfo.color === "green" ? [0, 128, 0] : 
-                          breakEvenInfo.color === "orange" ? [255, 140, 0] : [220, 0, 0];
-        pdf.setFillColor(...iconColor);
-        pdf.circle(17, messageY - 1, 2, 'F');
+        let assessmentTitle = "ROI Bewertung: ";
+        if (breakEvenInfo.color === "green") {
+          assessmentTitle += "Ausgezeichnet";
+        } else if (breakEvenInfo.color === "orange") {
+          assessmentTitle += "Durchschnittlich";
+        } else {
+          assessmentTitle += "Verbesserungswürdig";
+        }
         
-        // Add message text with word wrapping
+        pdf.text(assessmentTitle, 25, messageY + 10);
+        
+        // Add detailed message
         pdf.setFont("helvetica", "normal");
-        const splitMessage = pdf.splitTextToSize(breakEvenInfo.message, 170);
-        pdf.text(splitMessage, 20, messageY + 7);
+        pdf.setFontSize(9);
+        pdf.setTextColor(60, 60, 60);
+        const splitMessage = pdf.splitTextToSize(breakEvenInfo.message, 160);
+        pdf.text(splitMessage, 25, messageY + 17);
       }
       
-      // Footer
-      pdf.setDrawColor(240, 180, 34);
-      pdf.setLineWidth(0.5);
-      pdf.line(20, 280, 190, 280);
+      // Add a page for future projections if advanced options were shown
+      if (showAdvancedOptions) {
+        // Add new page
+        pdf.addPage();
+        
+        // Page header
+        pdf.setFillColor(37, 58, 111);
+        pdf.rect(0, 0, 210, 20, 'F');
+        pdf.setFillColor(240, 180, 34);
+        pdf.rect(0, 20, 210, 2, 'F');
+        
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(14);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text("reLounge ROI Kalkulation - Zukunftsprognose", 20, 14);
+        
+        // Projection section
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(16);
+        pdf.setTextColor(37, 58, 111);
+        pdf.text("4. Langzeitprognose", 20, 40);
+        
+        // Description text
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.setTextColor(80, 80, 80);
+        pdf.text("Projektion der Einnahmen und des Return on Investment über einen Zeitraum von 36 Monaten", 20, 48);
+        
+        // Draw revenue projection chart
+        pdf.setFillColor(248, 248, 252);
+        pdf.roundedRect(20, 55, 170, 110, 3, 3, 'F');
+        
+        // Chart title
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(12);
+        pdf.setTextColor(37, 58, 111);
+        pdf.text("Kumulativer ROI über Zeit", 105, 65, { align: "center" });
+        
+        // X and Y axis
+        pdf.setDrawColor(150, 150, 150);
+        pdf.setLineWidth(0.5);
+        pdf.line(40, 140, 180, 140); // X axis
+        pdf.line(40, 75, 40, 140); // Y axis
+        
+        // Breakeven point
+        const breakevenX = 40 + ((breakEvenMonths / 36) * 140);
+        
+        // X axis labels (months)
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.setTextColor(100, 100, 100);
+        
+        // Month markers
+        for (let i = 0; i <= 36; i += 6) {
+          const x = 40 + ((i / 36) * 140);
+          pdf.line(x, 140, x, 142); // Tick mark
+          pdf.text(i.toString(), x, 147, { align: "center" });
+        }
+        pdf.text("Monate", 110, 155, { align: "center" });
+        
+        // Y axis labels (ROI %)
+        for (let i = 0; i <= 100; i += 25) {
+          const y = 140 - ((i / 100) * 65);
+          pdf.line(38, y, 40, y); // Tick mark
+          pdf.text(`${i}%`, 35, y, { align: "right" });
+        }
+        pdf.text("ROI %", 25, 107.5, { align: "center", angle: 90 });
+        
+        // Draw investment line (red)
+        pdf.setDrawColor(200, 50, 50);
+        pdf.setLineWidth(1.5);
+        pdf.line(40, 140, 180, 140); // Investment stays flat at 0%
+        
+        // Calculate monthly net income
+        const monthlyNet = totalRevenue - monthlyExpenses;
+        
+        // Draw return curve (green)
+        pdf.setDrawColor(40, 180, 70);
+        pdf.setLineWidth(1.5);
+        
+        // Starting point
+        pdf.line(40, 140, 40, 140); // Start at 0%
+        
+        // Define points along the ROI curve
+        const points = [];
+        
+        for (let month = 1; month <= 36; month++) {
+          // Calculate ROI percentage: (cumulative net income - system cost) / system cost * 100
+          // Negative ROI is capped at -100%
+          const cumulativeNet = month * monthlyNet;
+          const roi = Math.max(-100, ((cumulativeNet - systemCost) / systemCost) * 100);
+          
+          // Convert to coordinates
+          const x = 40 + ((month / 36) * 140);
+          const y = 140 - ((Math.min(100, roi) / 100) * 65); // Cap display at 100%
+          
+          points.push([x, y]);
+        }
+        
+        // Draw the curve
+        for (let i = 0; i < points.length - 1; i++) {
+          pdf.line(points[i][0], points[i][1], points[i+1][0], points[i+1][1]);
+        }
+        
+        // Highlight breakeven point
+        if (breakEvenMonths <= 36) {
+          pdf.setDrawColor(240, 180, 34);
+          pdf.setLineWidth(1);
+          pdf.setLineDash([3, 2]); // Dashed line
+          pdf.line(breakevenX, 75, breakevenX, 140); // Vertical line at breakeven
+          pdf.line(40, 140, breakevenX, 140); // Horizontal line to breakeven
+          pdf.setLineDash([]);
+          
+          // Breakeven point marker
+          pdf.setFillColor(240, 180, 34);
+          pdf.circle(breakevenX, 140, 3, 'F');
+          
+          // Breakeven label
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(9);
+          pdf.setTextColor(240, 180, 34);
+          pdf.text(`Amortisation: ${breakEvenMonths} Monate`, breakevenX, 72, { align: "center" });
+        }
+        
+        // Legend
+        pdf.setFillColor(255, 255, 255, 0.8);
+        pdf.rect(130, 80, 55, 30, 'F');
+        
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
+        pdf.setTextColor(60, 60, 60);
+        pdf.text("Legende:", 135, 88);
+        
+        // Investment line
+        pdf.setDrawColor(200, 50, 50);
+        pdf.setLineWidth(1.5);
+        pdf.line(135, 95, 145, 95);
+        pdf.setFont("helvetica", "normal");
+        pdf.text("Investition", 148, 95);
+        
+        // Return line
+        pdf.setDrawColor(40, 180, 70);
+        pdf.line(135, 102, 145, 102);
+        pdf.text("ROI", 148, 102);
+        
+        // Summary section at bottom
+        pdf.setFillColor(240, 180, 34, 0.1);
+        pdf.roundedRect(20, 175, 170, 40, 3, 3, 'F');
+        
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.setTextColor(37, 58, 111);
+        pdf.text("Zusammenfassung", 30, 185);
+        
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(60, 60, 60);
+        
+        // Calculate long term financial impact
+        const yearlyNet = monthlyNet * 12;
+        const threeYearNet = yearlyNet * 3;
+        const threeYearROI = Math.round((threeYearNet - systemCost) / systemCost * 100);
+        
+        const summaryText = [
+          `• Bei gleichbleibenden Patientenzahlen erwirtschaften Sie nach Amortisation einen`,
+          `  jährlichen Reingewinn von ca. ${formatCurrency(yearlyNet)}.`,
+          `• Nach 3 Jahren haben Sie einen Nettoertrag von ca. ${formatCurrency(threeYearNet - systemCost)}`,
+          `  erzielt, was einem ROI von ${threeYearROI}% entspricht.`,
+          `• Die reLounge-Technologie bietet einen langfristigen Wettbewerbsvorteil für Ihre Praxis.`
+        ];
+        
+        pdf.text(summaryText, 30, 195);
+      }
       
-      pdf.setFont("helvetica", "italic");
-      pdf.setFontSize(10);
-      pdf.setTextColor(100, 100, 100);
-      pdf.text("ROI Kalkulation für reLounge Therapiesysteme", 105, 285, { align: "center" });
-      pdf.text("Generiert mit dem reLounge ROI Kalkulator", 105, 290, { align: "center" });
+      // Footer with logo and page numbers on all pages
+      const pageCount = pdf.getNumberOfPages();
       
-      // Save the PDF
-      pdf.save("reLounge_ROI_Kalkulation.pdf");
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        
+        // Footer line
+        pdf.setDrawColor(240, 180, 34);
+        pdf.setLineWidth(0.5);
+        pdf.line(20, 280, 190, 280);
+        
+        // Footer text
+        pdf.setFont("helvetica", "italic");
+        pdf.setFontSize(8);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text("© reLounge Medical Systems GmbH", 20, 286);
+        pdf.text(`Seite ${i} von ${pageCount}`, 190, 286, { align: "right" });
+        pdf.setFont("helvetica", "normal");
+        pdf.text("Erstellt mit dem reLounge ROI Kalkulator", 105, 286, { align: "center" });
+      }
+      
+      // Save the PDF with formatted date in filename
+      const dateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      pdf.save(`reLounge_ROI_Kalkulation_${dateStr}.pdf`);
     } catch (error) {
       console.error("PDF generation error:", error);
       alert("Bei der Erstellung des PDF-Berichts ist ein Fehler aufgetreten.");
