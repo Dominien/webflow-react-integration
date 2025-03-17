@@ -674,7 +674,7 @@ function ROICalculator() {
         pdf.setFont("helvetica", "italic");
         pdf.setFontSize(8);
         pdf.setTextColor(100, 100, 100);
-        pdf.text("© Altiqo", 20, 286);
+        pdf.text("© ATHLETIQO GmbH", 20, 286);
         pdf.text(`Seite ${i} von ${pageCount}`, 190, 286, { align: "right" });
         pdf.setFont("helvetica", "normal");
         pdf.text("Erstellt mit dem reLounge ROI Kalkulator", 105, 286, { align: "center" });
