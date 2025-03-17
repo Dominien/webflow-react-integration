@@ -1,7 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import './ROICalculator.css';
+import { 
+  FaEuroSign, 
+  FaCalculator, 
+  FaChartPie, 
+  FaDownload, 
+  FaCogs, 
+  FaUserMd, 
+  FaUserTie, 
+  FaUsers, 
+  FaRegLightbulb, 
+  FaArrowDown 
+} from 'react-icons/fa';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -184,7 +196,10 @@ function ROICalculator() {
         <div className="card-content">
           {/* Statutory Health Insurance Patients */}
           <div className="input-section">
-            <h3 className="section-title">Gesetzlich versicherte Patienten</h3>
+            <h3 className="section-title">
+              <FaUserMd className="section-icon" />
+              Gesetzlich versicherte Patienten
+            </h3>
             <div className="input-grid">
               <div className="input-group">
                 <label htmlFor="statutory-patients">Anzahl der Patienten</label>
@@ -212,7 +227,10 @@ function ROICalculator() {
 
           {/* Private Patients */}
           <div className="input-section">
-            <h3 className="section-title">Privatpatienten</h3>
+            <h3 className="section-title">
+              <FaUserTie className="section-icon" />
+              Privatpatienten
+            </h3>
             <div className="input-grid">
               <div className="input-group">
                 <label htmlFor="private-patients">Anzahl der Patienten</label>
@@ -240,7 +258,10 @@ function ROICalculator() {
 
           {/* Self-Pay Patients */}
           <div className="input-section">
-            <h3 className="section-title">Selbstzahler</h3>
+            <h3 className="section-title">
+              <FaUsers className="section-icon" />
+              Selbstzahler
+            </h3>
             <div className="input-grid">
               <div className="input-group">
                 <label htmlFor="self-pay-patients">Anzahl der Patienten</label>
@@ -256,7 +277,11 @@ function ROICalculator() {
                 <label>Paketauswahl</label>
                 <div className="radio-group">
                   {Object.entries(SELF_PAY_PACKAGES).map(([key, pkg]) => (
-                    <div key={key} className="radio-item">
+                    <div 
+                      key={key} 
+                      className={`radio-item ${selectedPackage === key ? 'selected' : ''}`}
+                      onClick={() => setSelectedPackage(key)}
+                    >
                       <input
                         type="radio"
                         id={key}
@@ -282,6 +307,7 @@ function ROICalculator() {
           <div className="advanced-options">
             <div className="toggle-section">
               <label htmlFor="advanced-toggle" className="toggle-label">
+                <span className="toggle-icon"><FaCogs /></span>
                 Erweiterte Optionen anzeigen
               </label>
               <div className="toggle-switch">
@@ -325,7 +351,7 @@ function ROICalculator() {
           {/* Calculate Button */}
           <div className="button-container">
             <button onClick={calculateResults} className="calculate-button">
-              Ergebnisse berechnen
+              <FaCalculator className="button-icon" /> Ergebnisse berechnen
             </button>
           </div>
         </div>
@@ -335,14 +361,16 @@ function ROICalculator() {
       {showResults && (
         <div id="results-section" className="results-container">
           <div className="results-indicator">
-            <div className="arrow-down"></div>
+            <FaArrowDown className="indicator-icon" />
             <span>Ihre Ergebnisse</span>
           </div>
 
           <div className="results-grid">
             <div className="results-card">
               <div className="card-header">
-                <h2 className="card-title">Umsatzübersicht</h2>
+                <h2 className="card-title">
+                  <FaEuroSign className="title-icon" /> Umsatzübersicht
+                </h2>
                 <p className="card-description">Geschätzter Umsatz basierend auf Ihren Eingaben</p>
               </div>
               <div className="card-content">
@@ -393,7 +421,9 @@ function ROICalculator() {
 
             <div className="results-card">
               <div className="card-header">
-                <h2 className="card-title">Umsatzvisualisierung</h2>
+                <h2 className="card-title">
+                  <FaChartPie className="title-icon" /> Umsatzvisualisierung
+                </h2>
                 <p className="card-description">Grafische Darstellung Ihrer Umsatzströme</p>
               </div>
               <div className="card-content">
@@ -467,7 +497,9 @@ function ROICalculator() {
           )}
 
           <div className="download-section">
-            <button className="download-button">Bericht herunterladen</button>
+            <button className="download-button">
+              <FaDownload className="button-icon" /> Bericht herunterladen
+            </button>
           </div>
         </div>
       )}
