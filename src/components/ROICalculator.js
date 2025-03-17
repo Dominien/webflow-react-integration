@@ -530,22 +530,31 @@ function ROICalculator() {
         packageY = patientSectionY + 70; // Fallback
       }
       
-      // Selbstzahler package information in a nice box
-      pdf.setFillColor(240, 180, 34, 0.1);
-      pdf.roundedRect(20, packageY, 170, 20, 2, 2, 'F');
+      // Selbstzahler package information in a nice box - use white background instead of tinted
+      pdf.setFillColor(255, 255, 255); // White background
+      pdf.setDrawColor(240, 180, 34, 0.5); // Gold border
+      pdf.setLineWidth(0.5);
+      pdf.roundedRect(20, packageY, 170, 20, 2, 2, 'FD'); // Fill and Draw
       
       pdf.setFontSize(11);
       pdf.setFont("helvetica", "bold");
-      pdf.setTextColor(60, 60, 60); // Fixed the text color here
+      pdf.setTextColor(37, 58, 111); // Blue color for heading
       pdf.text("Gewähltes Selbstzahlerpaket:", 25, packageY + 7);
       
       pdf.setFont("helvetica", "normal");
-      pdf.setTextColor(60, 60, 60);
+      pdf.setTextColor(60, 60, 60); // Dark gray for content
       const selectedPkg = SELF_PAY_PACKAGES[selectedPackage];
       pdf.text(`${selectedPkg.name} - ${formatCurrency(selectedPkg.price)} (${selectedPkg.sessions} Sitzungen à ${formatCurrency(selectedPkg.price / selectedPkg.sessions)})`, 25, packageY + 15);
       
+      // Always start visualization on a new page for better layout
+      pdf.addPage();
+      // Reset the position to top of new page
+      packageY = 40;
+      
       // Revenue Visualization Section
       const chartSectionY = packageY + 30;
+      
+      // Add section header
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(14);
       pdf.setTextColor(37, 58, 111);
@@ -564,12 +573,12 @@ function ROICalculator() {
           const chartCanvas = await html2canvas(chartRef.current.canvas);
           const chartImgData = chartCanvas.toDataURL('image/png', 1.0);
           
-          // Add explanatory text beside the chart
+          // Add chart background
           pdf.setFillColor(248, 248, 252);
-          pdf.roundedRect(20, chartSectionY + 12, 170, 100, 3, 3, 'F');
+          pdf.roundedRect(20, chartSectionY + 12, 170, 90, 3, 3, 'F');
           
           // Add the chart image to the PDF with improved position and sizing
-          pdf.addImage(chartImgData, 'PNG', 30, chartSectionY + 22, 80, 80);
+          pdf.addImage(chartImgData, 'PNG', 30, chartSectionY + 22, 75, 75);
           
           // Add legend with percentages
           const total = statutoryRevenue + privateRevenue + selfPayRevenue;
@@ -581,41 +590,39 @@ function ROICalculator() {
           pdf.setFont("helvetica", "bold");
           pdf.setFontSize(10);
           pdf.setTextColor(37, 58, 111);
-          pdf.text("Umsatzverteilung:", 120, chartSectionY + 35);
+          pdf.text("Umsatzverteilung:", 115, chartSectionY + 32);
           
           // Legend items with color boxes
           pdf.setFontSize(9);
           pdf.setFillColor(37, 58, 111, 0.7);
-          pdf.rect(120, chartSectionY + 45, 5, 5, 'F');
+          pdf.rect(115, chartSectionY + 40, 5, 5, 'F');
           pdf.setFont("helvetica", "normal");
           pdf.setTextColor(60, 60, 60);
-          pdf.text(`Gesetzlich: ${statPct}% (${formatCurrency(statutoryRevenue)})`, 130, chartSectionY + 48);
+          pdf.text(`Gesetzlich: ${statPct}% (${formatCurrency(statutoryRevenue)})`, 125, chartSectionY + 43);
           
           pdf.setFillColor(37, 58, 111, 0.4);
-          pdf.rect(120, chartSectionY + 55, 5, 5, 'F');
-          pdf.text(`Privat: ${privatePct}% (${formatCurrency(privateRevenue)})`, 130, chartSectionY + 58);
+          pdf.rect(115, chartSectionY + 50, 5, 5, 'F');
+          pdf.text(`Privat: ${privatePct}% (${formatCurrency(privateRevenue)})`, 125, chartSectionY + 53);
           
           pdf.setFillColor(240, 180, 34, 0.7);
-          pdf.rect(120, chartSectionY + 65, 5, 5, 'F');
-          pdf.text(`Selbstzahler: ${selfPayPct}% (${formatCurrency(selfPayRevenue)})`, 130, chartSectionY + 68);
+          pdf.rect(115, chartSectionY + 60, 5, 5, 'F');
+          pdf.text(`Selbstzahler: ${selfPayPct}% (${formatCurrency(selfPayRevenue)})`, 125, chartSectionY + 63);
           
-          // Add a brief analysis
-          pdf.setFillColor(240, 180, 34, 0.1);
-          pdf.roundedRect(120, chartSectionY + 78, 70, 24, 2, 2, 'F');
-          pdf.setFontSize(8);
+          // Add a brief analysis (using simpler styling)
           pdf.setFont("helvetica", "italic");
+          pdf.setFontSize(8);
           
-          let analysisText = "Für optimale Profitabilität empfehlen wir";
+          let analysisText = "Empfehlung: ";
           if (selfPayPct < 20) {
-            analysisText += " einen höheren Anteil an Selbstzahlern.";
+            analysisText += "Erhöhen Sie den Anteil an Selbstzahlern für bessere Rentabilität.";
           } else if (privatePct < 15) {
-            analysisText += " einen höheren Anteil an Privatpatienten.";
+            analysisText += "Ein höherer Anteil an Privatpatienten könnte Ihren ROI verbessern.";
           } else {
-            analysisText += " die aktuelle Patientenverteilung beizubehalten.";
+            analysisText += "Ihre aktuelle Patientenverteilung ist optimal für die Rentabilität.";
           }
           
-          const splitAnalysis = pdf.splitTextToSize(analysisText, 65);
-          pdf.text(splitAnalysis, 122, chartSectionY + 85);
+          const splitAnalysis = pdf.splitTextToSize(analysisText, 80);
+          pdf.text(splitAnalysis, 115, chartSectionY + 73);
         } catch (e) {
           // If chart capture fails, add a text note
           pdf.setFont("helvetica", "italic");
@@ -627,8 +634,8 @@ function ROICalculator() {
       
       // ROI Analysis Section (only if advanced options were shown)
       if (showAdvancedOptions) {
-        // Calculate safe Y position for ROI section - keeping it more compact
-        let roiY = chartSectionY + 120;
+        // Calculate position for ROI section
+        let roiY = chartSectionY + 110;
         try {
           if (chartRef.current) {
             // We already positioned relative to chart
@@ -640,6 +647,10 @@ function ROICalculator() {
         } catch (e) {
           // Keep default
         }
+        
+        // Always start ROI analysis on a new page for better layout
+        pdf.addPage();
+        roiY = 40; // Start at top of new page
         
         // ROI section title
         pdf.setFont("helvetica", "bold");
@@ -730,11 +741,25 @@ function ROICalculator() {
       
       // Skip the future projections page to keep everything on one page
       
-      // Footer with logo and page numbers on all pages
+      // Add headers and footers to all pages
       const pageCount = pdf.getNumberOfPages();
       
       for (let i = 1; i <= pageCount; i++) {
         pdf.setPage(i);
+        
+        // Skip header on first page as it already has one
+        if (i > 1) {
+          // Add a mini header to each page after the first
+          pdf.setFillColor(37, 58, 111);
+          pdf.rect(0, 0, 210, 15, 'F');
+          pdf.setFillColor(240, 180, 34);
+          pdf.rect(0, 15, 210, 2, 'F');
+          
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(10);
+          pdf.setTextColor(255, 255, 255);
+          pdf.text("reLounge ROI Kalkulation", 20, 10);
+        }
         
         // Footer line
         pdf.setDrawColor(240, 180, 34);
