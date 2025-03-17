@@ -1,4 +1,5 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: './src/index.js',
@@ -17,7 +18,11 @@ module.exports = {
         test: /\.(pdf|jpg|png|gif|svg|ico)$/,
         use: [
           {
-            loader: 'url-loader'
+            loader: 'url-loader',
+            options: {
+              limit: 8192,
+              fallback: 'file-loader'
+            }
           },
         ]
       },
@@ -35,6 +40,12 @@ module.exports = {
     publicPath: '/',
     filename: 'bundle.js'
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './dist/index.html',
+      filename: 'index.html'
+    })
+  ],
   devServer: {
     static: {
       directory: path.join(__dirname, 'dist')
