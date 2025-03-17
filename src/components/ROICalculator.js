@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip as ChartTooltip, Legend } from 'chart.js';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
+import 'jspdf-autotable';
 import './ROICalculator.css';
 
 ChartJS.register(ArcElement, ChartTooltip, Legend);
@@ -208,6 +211,11 @@ function ROICalculator() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [breakEvenMonths, setBreakEvenMonths] = useState(0);
 
+  // PDF Generation
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const chartRef = useRef(null);
+  const resultsRef = useRef(null);
+  
   // Show results section
   const [showResults, setShowResults] = useState(false);
 
@@ -348,6 +356,167 @@ function ROICalculator() {
         icon: "danger",
         message: `Ihre geschätzte Amortisationszeit von ${months} Monaten ist länger als der typische Bereich von 8-14 Monaten. Erwägen Sie eine Anpassung Ihres Patientenmix oder der Paketangebote, um den ROI zu verbessern.`
       };
+    }
+  };
+
+  // Generate and download PDF report
+  const generatePDF = async () => {
+    if (!showResults) return;
+    
+    setIsGeneratingPDF(true);
+    
+    try {
+      // Create PDF document (A4 size)
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      // PDF title and header
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(20);
+      pdf.setTextColor(37, 58, 111); // Secondary color
+      pdf.text("reLounge ROI Kalkulationsbericht", 105, 20, { align: "center" });
+      
+      pdf.setFontSize(12);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text("Erstellt am " + new Date().toLocaleDateString("de-DE"), 105, 30, { align: "center" });
+      
+      // Horizontal line
+      pdf.setDrawColor(240, 180, 34); // Primary color
+      pdf.setLineWidth(0.5);
+      pdf.line(20, 35, 190, 35);
+      
+      // Patient Information Section
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(14);
+      pdf.setTextColor(37, 58, 111);
+      pdf.text("Patienteninformationen", 20, 45);
+      
+      // Patient table
+      pdf.autoTable({
+        startY: 50,
+        head: [['Patientengruppe', 'Anzahl', 'Sitzungen/Patient', 'Gebühr/Sitzung', 'Gesamtumsatz']],
+        body: [
+          ['Gesetzlich versicherte', 
+           statutoryPatients.toString(), 
+           statutorySessions.toString(), 
+           formatCurrency(STATUTORY_FEE), 
+           formatCurrency(statutoryRevenue)
+          ],
+          ['Privatpatienten', 
+           privatePatients.toString(), 
+           privateSessions.toString(), 
+           formatCurrency(PRIVATE_FEE), 
+           formatCurrency(privateRevenue)
+          ],
+          ['Selbstzahler', 
+           selfPayPatients.toString(), 
+           SELF_PAY_PACKAGES[selectedPackage].sessions.toString(), 
+           formatCurrency(SELF_PAY_PACKAGES[selectedPackage].price / SELF_PAY_PACKAGES[selectedPackage].sessions), 
+           formatCurrency(selfPayRevenue)
+          ],
+        ],
+        theme: 'grid',
+        styles: { fontSize: 10, cellPadding: 5 },
+        headStyles: { fillColor: [37, 58, 111], textColor: [255, 255, 255] },
+        columnStyles: { 
+          0: { fontStyle: 'bold' }, 
+          4: { halign: 'right', fontStyle: 'bold' } 
+        },
+        foot: [['Gesamt', '', '', '', formatCurrency(totalRevenue)]],
+        footStyles: { fillColor: [240, 180, 34, 0.1], textColor: [0, 0, 0], fontStyle: 'bold' }
+      });
+      
+      // Package information
+      const packageY = pdf.lastAutoTable.finalY + 10;
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Gewähltes Selbstzahlerpaket:", 20, packageY);
+      
+      pdf.setFont("helvetica", "normal");
+      const selectedPkg = SELF_PAY_PACKAGES[selectedPackage];
+      pdf.text(`${selectedPkg.name} - ${formatCurrency(selectedPkg.price)} (${formatCurrency(selectedPkg.price / selectedPkg.sessions)} pro Sitzung)`, 85, packageY);
+      
+      // Revenue chart section
+      if (chartRef.current) {
+        const chartY = packageY + 20;
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(14);
+        pdf.setTextColor(37, 58, 111);
+        pdf.text("Umsatzvisualisierung", 105, chartY, { align: "center" });
+        
+        // Convert the chart to an image
+        const chartCanvas = await html2canvas(chartRef.current.canvas);
+        const chartImgData = chartCanvas.toDataURL('image/png');
+        
+        // Add the chart image to the PDF
+        pdf.addImage(chartImgData, 'PNG', 55, chartY + 5, 100, 80);
+      }
+      
+      // ROI Analysis Section (only if advanced options were shown)
+      if (showAdvancedOptions) {
+        const roiY = pdf.lastAutoTable ? (pdf.lastAutoTable.finalY + 100) : 170;
+        
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(14);
+        pdf.setTextColor(37, 58, 111);
+        pdf.text("ROI Analyse", 20, roiY);
+        
+        pdf.autoTable({
+          startY: roiY + 5,
+          head: [['Parameter', 'Wert']],
+          body: [
+            ['Systemkosten', formatCurrency(systemCost)],
+            ['Monatliche Betriebskosten', formatCurrency(monthlyExpenses)],
+            ['Monatlicher Nettoertrag', formatCurrency(totalRevenue - monthlyExpenses)],
+            ['Geschätzte Amortisationszeit', `${breakEvenMonths} Monate`]
+          ],
+          theme: 'grid',
+          styles: { fontSize: 10, cellPadding: 5 },
+          headStyles: { fillColor: [37, 58, 111], textColor: [255, 255, 255] },
+          columnStyles: { 0: { fontStyle: 'bold' } },
+        });
+        
+        // ROI Analysis message
+        const messageY = pdf.lastAutoTable.finalY + 10;
+        const breakEvenInfo = getBreakevenInfo(breakEvenMonths);
+        
+        pdf.setFontSize(12);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("ROI Bewertung:", 20, messageY);
+        
+        // Add colored icon based on breakeven status
+        const iconColor = breakEvenInfo.color === "green" ? [0, 128, 0] : 
+                          breakEvenInfo.color === "orange" ? [255, 140, 0] : [220, 0, 0];
+        pdf.setFillColor(...iconColor);
+        pdf.circle(17, messageY - 1, 2, 'F');
+        
+        // Add message text with word wrapping
+        pdf.setFont("helvetica", "normal");
+        const splitMessage = pdf.splitTextToSize(breakEvenInfo.message, 170);
+        pdf.text(splitMessage, 20, messageY + 7);
+      }
+      
+      // Footer
+      pdf.setDrawColor(240, 180, 34);
+      pdf.setLineWidth(0.5);
+      pdf.line(20, 280, 190, 280);
+      
+      pdf.setFont("helvetica", "italic");
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text("ROI Kalkulation für reLounge Therapiesysteme", 105, 285, { align: "center" });
+      pdf.text("Generiert mit dem reLounge ROI Kalkulator", 105, 290, { align: "center" });
+      
+      // Save the PDF
+      pdf.save("reLounge_ROI_Kalkulation.pdf");
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      alert("Bei der Erstellung des PDF-Berichts ist ein Fehler aufgetreten.");
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -500,7 +669,7 @@ function ROICalculator() {
 
       {/* Results Section */}
       {showResults && (
-        <div id="results-section" className="results-container">
+        <div id="results-section" className="results-container" ref={resultsRef}>
           <div className="results-indicator">
             <ChevronDownIcon />
             <span>Ihre Ergebnisse</span>
@@ -572,7 +741,7 @@ function ROICalculator() {
               <div className="card-content">
                 <div className="chart-container">
                   {totalRevenue > 0 ? (
-                    <Pie data={revenueChartData} options={chartOptions} />
+                    <Pie ref={chartRef} data={revenueChartData} options={chartOptions} />
                   ) : (
                     <div className="empty-chart">
                       Geben Sie Patientendaten ein, um die Umsatzvisualisierung zu sehen
@@ -631,9 +800,22 @@ function ROICalculator() {
           )}
 
           <div className="download-section">
-            <button className="download-button">
-              <DownloadIcon />
-              Bericht herunterladen
+            <button 
+              className="download-button" 
+              onClick={generatePDF}
+              disabled={isGeneratingPDF}
+            >
+              {isGeneratingPDF ? (
+                <>
+                  <span className="loading-spinner"></span>
+                  PDF wird erstellt...
+                </>
+              ) : (
+                <>
+                  <DownloadIcon />
+                  Bericht herunterladen
+                </>
+              )}
             </button>
           </div>
         </div>
