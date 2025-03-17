@@ -3,7 +3,7 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip as ChartTooltip, Legend } from 'chart.js';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import './ROICalculator.css';
 
 ChartJS.register(ArcElement, ChartTooltip, Legend);
@@ -395,7 +395,7 @@ function ROICalculator() {
       pdf.text("Patienteninformationen", 20, 45);
       
       // Patient table
-      pdf.autoTable({
+      autoTable(pdf, {
         startY: 50,
         head: [['Patientengruppe', 'Anzahl', 'Sitzungen/Patient', 'Gebühr/Sitzung', 'Gesamtumsatz']],
         body: [
@@ -430,7 +430,7 @@ function ROICalculator() {
       });
       
       // Package information
-      const packageY = pdf.lastAutoTable.finalY + 10;
+      const packageY = pdf.previousAutoTable.finalY + 10;
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "bold");
       pdf.text("Gewähltes Selbstzahlerpaket:", 20, packageY);
@@ -457,14 +457,14 @@ function ROICalculator() {
       
       // ROI Analysis Section (only if advanced options were shown)
       if (showAdvancedOptions) {
-        const roiY = pdf.lastAutoTable ? (pdf.lastAutoTable.finalY + 100) : 170;
+        const roiY = pdf.previousAutoTable ? (pdf.previousAutoTable.finalY + 100) : 170;
         
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(14);
         pdf.setTextColor(37, 58, 111);
         pdf.text("ROI Analyse", 20, roiY);
         
-        pdf.autoTable({
+        autoTable(pdf, {
           startY: roiY + 5,
           head: [['Parameter', 'Wert']],
           body: [
@@ -480,7 +480,7 @@ function ROICalculator() {
         });
         
         // ROI Analysis message
-        const messageY = pdf.lastAutoTable.finalY + 10;
+        const messageY = pdf.previousAutoTable.finalY + 10;
         const breakEvenInfo = getBreakevenInfo(breakEvenMonths);
         
         pdf.setFontSize(12);
