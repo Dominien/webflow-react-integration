@@ -28,6 +28,13 @@
   line-height: 1.5;
 }
 
+/* Remove padding on mobile */
+@media (max-width: 767px) {
+  .roi-calculator {
+    padding: 0;
+  }
+}
+
 /* Card Styles */
 .calculator-card, .results-card {
   background-color: #ffffff;
