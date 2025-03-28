@@ -437,15 +437,16 @@ function ROICalculator() {
       pdf.setFillColor(240, 180, 34);
       pdf.rect(0, 35, 210, 4, 'F');
       
-      // Use the provided URL for the logo
-      const reLoungeLogo = "https://cdn.prod.website-files.com/66d9a07b4d36945d49ab3606/67e6b3b97ff2ac75eaaae6a8_Column.png";
+      // Instead of URL or embedded PNG, let's just create a placeholder logo with jsPDF's drawing capabilities
+      // Draw a blue text logo as a placeholder
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(16);
+      pdf.text("reLounge", 150, 15, { align: "center" });
       
-      // Define logo dimensions
-      const logoWidth = 65; // Width in PDF units (mm)
-      const logoHeight = 23; // Height in PDF units (mm)
-      
-      // Add logo to PDF - positioned in top right area
-      pdf.addImage(reLoungeLogo, 'PNG', 130, 6, logoWidth, logoHeight);
+      // We'll also add a small golden rectangle next to it to mimic logo styling
+      pdf.setFillColor(240, 180, 34);
+      pdf.rect(127, 10, 3, 10, 'F');
       
       // Title text
       pdf.setFont("helvetica", "bold");
@@ -722,8 +723,15 @@ function ROICalculator() {
           pdf.setFillColor(240, 180, 34);
           pdf.rect(0, 15, 210, 2, 'F');
           
-          // Add smaller logo to subsequent pages
-          pdf.addImage(reLoungeLogo, 'PNG', 155, 3, 40, 10);
+          // Add text-based logo to subsequent pages
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(12);
+          pdf.text("reLounge", 175, 10, { align: "center" });
+          
+          // Add a small golden rectangle as logo styling
+          pdf.setFillColor(240, 180, 34);
+          pdf.rect(160, 7, 2, 6, 'F');
           
           pdf.setFont("helvetica", "bold");
           pdf.setFontSize(10);
