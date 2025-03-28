@@ -421,6 +421,23 @@ function ROICalculator() {
     setIsGeneratingPDF(true);
     
     try {
+      // First, preload the image to ensure it's available for PDF generation
+      const logoUrl = "https://cdn.prod.website-files.com/66d9a07b4d36945d49ab3606/67e6b3b97ff2ac75eaaae6a8_Column.png";
+      const logoImg = new Image();
+      
+      // Promise to wait for image to load
+      const loadImagePromise = new Promise((resolve, reject) => {
+        logoImg.onload = () => resolve(logoImg);
+        logoImg.onerror = () => {
+          console.warn("Logo image failed to load, will use text fallback");
+          resolve(null); // Resolve with null to continue execution
+        };
+        logoImg.src = logoUrl;
+      });
+      
+      // Wait for image to load
+      const loadedImage = await loadImagePromise;
+      
       // Create PDF document (A4 size)
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -437,16 +454,42 @@ function ROICalculator() {
       pdf.setFillColor(240, 180, 34);
       pdf.rect(0, 35, 210, 4, 'F');
       
-      // Instead of URL or embedded PNG, let's just create a placeholder logo with jsPDF's drawing capabilities
-      // Draw a blue text logo as a placeholder
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(16);
-      pdf.text("reLounge", 150, 15, { align: "center" });
-      
-      // We'll also add a small golden rectangle next to it to mimic logo styling
-      pdf.setFillColor(240, 180, 34);
-      pdf.rect(127, 10, 3, 10, 'F');
+      // Try to add logo if image loaded, otherwise use text
+      if (loadedImage) {
+        try {
+          // Convert the loaded image to data URL for jsPDF
+          const canvas = document.createElement('canvas');
+          canvas.width = logoImg.width;
+          canvas.height = logoImg.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(logoImg, 0, 0);
+          const dataUrl = canvas.toDataURL('image/jpeg'); // Using JPEG which is more reliably supported
+          
+          // Add the image to PDF
+          pdf.addImage(dataUrl, 'JPEG', 130, 10, 65, 20);
+        } catch (imgErr) {
+          console.warn("Error adding image to PDF:", imgErr);
+          // Fallback to text logo
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(16);
+          pdf.text("reLounge", 150, 15, { align: "center" });
+          
+          // Small golden rectangle next to it
+          pdf.setFillColor(240, 180, 34);
+          pdf.rect(127, 10, 3, 10, 'F');
+        }
+      } else {
+        // Fallback to text logo
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(16);
+        pdf.text("reLounge", 150, 15, { align: "center" });
+        
+        // Small golden rectangle next to it
+        pdf.setFillColor(240, 180, 34);
+        pdf.rect(127, 10, 3, 10, 'F');
+      }
       
       // Title text
       pdf.setFont("helvetica", "bold");
@@ -723,15 +766,41 @@ function ROICalculator() {
           pdf.setFillColor(240, 180, 34);
           pdf.rect(0, 15, 210, 2, 'F');
           
-          // Add text-based logo to subsequent pages
-          pdf.setTextColor(255, 255, 255);
-          pdf.setFont("helvetica", "bold");
-          pdf.setFontSize(12);
-          pdf.text("reLounge", 175, 10, { align: "center" });
-          
-          // Add a small golden rectangle as logo styling
-          pdf.setFillColor(240, 180, 34);
-          pdf.rect(160, 7, 2, 6, 'F');
+          // Try to add logo if we previously loaded the image, otherwise use text
+          if (loadedImage) {
+            try {
+              // We already have the data URL prepared
+              const canvas = document.createElement('canvas');
+              canvas.width = logoImg.width;
+              canvas.height = logoImg.height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(logoImg, 0, 0);
+              const dataUrl = canvas.toDataURL('image/jpeg');
+              
+              // Add smaller logo to the page header
+              pdf.addImage(dataUrl, 'JPEG', 155, 3, 40, 10);
+            } catch (imgErr) {
+              // Text fallback
+              pdf.setTextColor(255, 255, 255);
+              pdf.setFont("helvetica", "bold");
+              pdf.setFontSize(12);
+              pdf.text("reLounge", 175, 10, { align: "center" });
+              
+              // Small golden rectangle as styling
+              pdf.setFillColor(240, 180, 34);
+              pdf.rect(160, 7, 2, 6, 'F');
+            }
+          } else {
+            // Text fallback
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(12);
+            pdf.text("reLounge", 175, 10, { align: "center" });
+            
+            // Small golden rectangle as styling
+            pdf.setFillColor(240, 180, 34);
+            pdf.rect(160, 7, 2, 6, 'F');
+          }
           
           pdf.setFont("helvetica", "bold");
           pdf.setFontSize(10);
