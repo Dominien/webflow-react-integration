@@ -9,9 +9,10 @@ import './ROICalculator.css';
 ChartJS.register(ArcElement, ChartTooltip, Legend);
 
 // Fee constants
-const STATUTORY_FEE = 10.53;
-const PRIVATE_FEE_MULTIPLIER = 1.8;
-const PRIVATE_FEE = STATUTORY_FEE * PRIVATE_FEE_MULTIPLIER;
+const STATUTORY_FEE_ET = 7.43; // Elektrotherapie
+const STATUTORY_FEE_WP = 14.24; // Warmpackung
+const PRIVATE_FEE_ET = 10.40; // Elektrotherapie
+const PRIVATE_FEE_WP = 19.94; // Warmpackung
 const SELF_PAY_PACKAGES = {
   einzelsitzung: { name: "Einzelsitzung", price: 59.9, sessions: 1 },
   tenPackage: { name: "10er Karte", price: 450, sessions: 10 },
@@ -182,6 +183,50 @@ const ToggleSwitch = ({ isChecked, onChange, label, icon }) => {
   );
 };
 
+// Therapy type selector component
+const TherapyTypeSelector = ({ selected, onChange }) => {
+  return (
+    <div className="input-group">
+      <label>Abrechnungsziffer auswählen</label>
+      <div className="radio-group therapy-type-group">
+        <div 
+          className={`radio-item ${selected === "ET" ? 'selected' : ''}`}
+          onClick={() => onChange("ET")}
+        >
+          <input
+            type="radio"
+            id="therapy-et"
+            name="therapy-type"
+            value="ET"
+            checked={selected === "ET"}
+            onChange={() => onChange("ET")}
+          />
+          <label htmlFor="therapy-et">
+            <span className="package-name">Elektrotherapie (ET)</span>
+          </label>
+        </div>
+        <div 
+          className={`radio-item ${selected === "WP" ? 'selected' : ''}`}
+          onClick={() => onChange("WP")}
+        >
+          <input
+            type="radio"
+            id="therapy-wp"
+            name="therapy-type"
+            value="WP"
+            checked={selected === "WP"}
+            onChange={() => onChange("WP")}
+          />
+          <label htmlFor="therapy-wp">
+            <span className="package-name">Warmpackung (WP)</span>
+          </label>
+        </div>
+      </div>
+      <p className="input-hint">Hinweis: In der Abrechnung ist immer nur eine Ziffer möglich.</p>
+    </div>
+  );
+};
+
 function ROICalculator() {
   // Patient counts
   const [statutoryPatients, setStatutoryPatients] = useState(20);
@@ -191,6 +236,9 @@ function ROICalculator() {
   // Sessions per patient
   const [statutorySessions, setStatutorySessions] = useState(6);
   const [privateSessions, setPrivateSessions] = useState(6);
+  
+  // Therapy type selection
+  const [therapyType, setTherapyType] = useState("ET"); // ET for Elektrotherapie, WP for Warmpackung
 
   // Self-pay package selection
   const [selectedPackage, setSelectedPackage] = useState("twentyPackage");
@@ -222,15 +270,19 @@ function ROICalculator() {
 
   // Calculate revenues
   const calculateResults = () => {
-    // Calculate revenue for statutory patients
-    const statRevenue = statutoryPatients * statutorySessions * STATUTORY_FEE;
+    // Get the correct fees based on therapy type
+    const statutoryFee = therapyType === "ET" ? STATUTORY_FEE_ET : STATUTORY_FEE_WP;
+    const privateFee = therapyType === "ET" ? PRIVATE_FEE_ET : PRIVATE_FEE_WP;
+    
+    // Calculate revenue for statutory patients (monthly)
+    const statRevenue = statutoryPatients * statutorySessions * statutoryFee;
     setStatutoryRevenue(statRevenue);
 
-    // Calculate revenue for private patients
-    const privRevenue = privatePatients * privateSessions * PRIVATE_FEE;
+    // Calculate revenue for private patients (monthly)
+    const privRevenue = privatePatients * privateSessions * privateFee;
     setPrivateRevenue(privRevenue);
 
-    // Calculate revenue for self-pay patients
+    // Calculate revenue for self-pay patients (monthly)
     const selectedPkg = SELF_PAY_PACKAGES[selectedPackage];
     const selfRevenue = selfPayPatients * selectedPkg.price;
     setSelfPayRevenue(selfRevenue);
@@ -418,10 +470,11 @@ function ROICalculator() {
       pdf.setFontSize(11);
       pdf.setTextColor(60, 60, 60);
       
+      const therapyTypeName = therapyType === "ET" ? "Elektrotherapie" : "Warmpackung";
       const summaryText = [
         `Dieser Bericht analysiert die potenzielle Rentabilität eines reLounge Therapiesystems`,
-        `basierend auf ${statutoryPatients + privatePatients + selfPayPatients} Patienten und einem geschätzten monatlichen Umsatz`,
-        `von ${formatCurrency(totalRevenue)}.`,
+        `basierend auf ${statutoryPatients + privatePatients + selfPayPatients} Patienten, ${therapyTypeName} als Abrechnungsziffer`,
+        `und einem geschätzten monatlichen Umsatz von ${formatCurrency(totalRevenue)}.`,
         "",
         `Die wichtigsten Kennzahlen im Überblick:`,
       ];
@@ -478,13 +531,13 @@ function ROICalculator() {
           ['Gesetzlich versicherte', 
            statutoryPatients.toString(), 
            statutorySessions.toString(), 
-           formatCurrency(STATUTORY_FEE), 
+           formatCurrency(therapyType === "ET" ? STATUTORY_FEE_ET : STATUTORY_FEE_WP), 
            formatCurrency(statutoryRevenue)
           ],
           ['Privatpatienten', 
            privatePatients.toString(), 
            privateSessions.toString(), 
-           formatCurrency(PRIVATE_FEE), 
+           formatCurrency(therapyType === "ET" ? PRIVATE_FEE_ET : PRIVATE_FEE_WP), 
            formatCurrency(privateRevenue)
           ],
           ['Selbstzahler', 
@@ -567,7 +620,7 @@ function ROICalculator() {
           head: [['Finanzparameter', 'Wert']],
           body: [
             ['Systemkosten (einmalig)', formatCurrency(systemCost)],
-            ['Monatliche Betriebskosten', formatCurrency(monthlyExpenses)],
+            ['Monatliche Betriebskosten (inkl. reLounge Leasing)', formatCurrency(monthlyExpenses)],
             ['Monatlicher Umsatz (brutto)', formatCurrency(totalRevenue)],
             ['Monatlicher Nettoertrag', formatCurrency(totalRevenue - monthlyExpenses)],
             ['Geschätzte Amortisationszeit', `${breakEvenMonths} Monate`],
@@ -700,10 +753,21 @@ function ROICalculator() {
             Patienteninformationen
           </h2>
           <p className="card-description">
-            Geben Sie die Patientendaten Ihrer Praxis ein, um den potenziellen Umsatz zu berechnen
+            Geben Sie die Patientendaten Ihrer Praxis ein, um den potenziellen monatlichen Umsatz zu berechnen
           </p>
         </div>
         <div className="card-content">
+          {/* Therapy Type Selection */}
+          <div className="input-section">
+            <h3 className="section-title">
+              <SettingsIcon />
+              Abrechnungsziffer
+            </h3>
+            <TherapyTypeSelector 
+              selected={therapyType} 
+              onChange={setTherapyType}
+            />
+          </div>
           {/* Statutory Health Insurance Patients */}
           <div className="input-section">
             <h3 className="section-title">
@@ -716,7 +780,7 @@ function ROICalculator() {
                 label="Anzahl der Patienten"
                 value={statutoryPatients}
                 onChange={setStatutoryPatients}
-                hint={`Gebühr pro Sitzung: ${formatCurrency(STATUTORY_FEE)}`}
+                hint={`Gebühr pro Sitzung: ${formatCurrency(therapyType === "ET" ? STATUTORY_FEE_ET : STATUTORY_FEE_WP)}`}
               />
 
               <NumberInput
@@ -741,7 +805,7 @@ function ROICalculator() {
                 label="Anzahl der Patienten"
                 value={privatePatients}
                 onChange={setPrivatePatients}
-                hint={`Gebühr pro Sitzung: ${formatCurrency(PRIVATE_FEE)}`}
+                hint={`Gebühr pro Sitzung: ${formatCurrency(therapyType === "ET" ? PRIVATE_FEE_ET : PRIVATE_FEE_WP)}`}
               />
 
               <NumberInput
@@ -822,7 +886,7 @@ function ROICalculator() {
                   label="Monatliche Betriebskosten (€)"
                   value={monthlyExpenses}
                   onChange={setMonthlyExpenses}
-                  hint="Inklusive Strom, Wartung, etc."
+                  hint="Inklusive Strom, Wartung, reLounge Leasing, etc."
                 />
               </div>
             )}
@@ -851,12 +915,16 @@ function ROICalculator() {
               <div className="card-header">
                 <h2 className="card-title">
                   <EuroCircleIcon />
-                  Umsatzübersicht
+                  Monatliche Umsatzübersicht
                 </h2>
-                <p className="card-description">Geschätzter Umsatz basierend auf Ihren Eingaben</p>
+                <p className="card-description">Geschätzter monatlicher Umsatz basierend auf Ihren Eingaben</p>
               </div>
               <div className="card-content">
                 <div className="revenue-summary">
+                  <div className="revenue-item">
+                    <span>Ausgewählte Abrechnungsziffer:</span>
+                    <span className="revenue-value">{therapyType === "ET" ? "Elektrotherapie (ET)" : "Warmpackung (WP)"}</span>
+                  </div>
                   <div className="revenue-item">
                     <span>Umsatz gesetzlich Versicherte:</span>
                     <span className="revenue-value">{formatCurrency(statutoryRevenue)}</span>
@@ -883,7 +951,7 @@ function ROICalculator() {
                       <span>{formatCurrency(systemCost)}</span>
                     </div>
                     <div className="roi-item">
-                      <span>Monatliche Betriebskosten:</span>
+                      <span>Monatliche Betriebskosten (inkl. reLounge Leasing):</span>
                       <span>{formatCurrency(monthlyExpenses)}</span>
                     </div>
                     <div className="roi-item">
